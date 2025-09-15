@@ -205,7 +205,7 @@ namespace nsK2EngineLow {
 			//接続されている。
 			m_state.bConnected = true;
 			UpdateCore(m_state.state);
-			
+
 		}
 		else {
 			//接続されていない場合はキーボードの入力でエミュレートする。

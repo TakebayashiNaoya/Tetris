@@ -38,7 +38,7 @@ namespace nsK2EngineLow {
 		/// デストラクタ。
 		/// </summary>
 		~MeshParts();
-		
+
 		/// <summary>
 		/// tkmファイルから初期化
 		/// </summary>
