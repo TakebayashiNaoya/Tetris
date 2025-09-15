@@ -3,7 +3,6 @@
 #include "Level3DRender/LevelRender.h"
 
 class FieldManager;
-class Tetrimino;
 
 class Game : public IGameObject
 {
@@ -16,7 +15,6 @@ public:
 
 private:
 	FieldManager* m_fieldManager;
-	Tetrimino* m_tetrimino;
 	ModelRender m_modelRender;
 	Vector3 m_pos;
 };
