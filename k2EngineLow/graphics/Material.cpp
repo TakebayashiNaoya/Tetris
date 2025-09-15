@@ -213,9 +213,9 @@ namespace nsK2EngineLow {
 			InitShaders(fxFilePath, vsEntryPointFunc, vsSkinEntryPointFunc, psEntryPointFunc);
 			//パイプラインステートを初期化。
 			InitPipelineState(
-				colorBufferFormat, 
-				alphaBlendMode, 
-				isDepthWrite, 
+				colorBufferFormat,
+				alphaBlendMode,
+				isDepthWrite,
 				isDepthTest,
 				cullMode
 			);

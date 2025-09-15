@@ -34,7 +34,7 @@ namespace nsK2EngineLow {
 		/// <param name="rc">レンダリングコンテキスト</param>
 		/// <param name="hasSkin">スキンがあるかどうかのフラグ</param>
 		void BeginRender(
-			RenderContext& rc, 
+			RenderContext& rc,
 			int hasSkin
 		);
 
@@ -86,7 +86,7 @@ namespace nsK2EngineLow {
 		{
 			return m_constantBuffer;
 		}
-		
+
 	private:
 		/// <summary>
 		/// パイプラインステートの初期化。
