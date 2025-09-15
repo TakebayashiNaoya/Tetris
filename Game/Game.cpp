@@ -5,9 +5,7 @@
 
 bool Game::Start()
 {
-
 	m_fieldManager = NewGO<FieldManager>(0, "FieldManager");
-	m_tetrimino = NewGO<Tetrimino>(0, "Tetrimino");
 	return true;
 }
 
