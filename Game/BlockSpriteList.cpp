@@ -3,8 +3,8 @@
 
 namespace
 {
-	const std::string TETRIMINO_FILE_PATH = "Assets/Tetrimino/Mino_";				// テトリミノのファイルパス。
-	const std::string EXTENSION_DDS = ".dds";										// スプライトの拡張子。
+	const std::string TETRIMINO_FILE_PATH = "Assets/Tetrimino/Mino_";		// テトリミノのファイルパス。
+	const std::string EXTENSION_DDS = ".dds";								// スプライトの拡張子。
 	const char fileName[enMinoKinds_Num] = { 'I','J','L','O','S','T','Z' };	// ファイルの名前。
 
 	/// <summary>
@@ -22,14 +22,16 @@ bool BlockSpriteList::Start()
 {
 	// blockSpriteRenderにブロックのスプライトをInitする。
 	for (int i = 0; i < enMinoKinds_Num; i++) {
-		blockSpriteRender[i].Init(GetFullPath(fileName[i]).c_str(), 40.0f, 40.0f);
+		blockSpriteRender[i].Init(GetFullPath(fileName[i]).c_str(), BLOCK_SIZE, BLOCK_SIZE);
 	}
-
 	return true;
 }
 
-
-
+/// <summary>
+/// 指定されたインデックスに基づいて新しい SpriteRender オブジェクトを作成します。
+/// </summary>
+/// <param name="index">ファイル名リストから使用するインデックス。</param>
+/// <returns>初期化された SpriteRender オブジェクトへのポインタ。</returns>
 SpriteRender* BlockCreateFactory::Create(const int index)
 {
 	auto* render = new SpriteRender();
