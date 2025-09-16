@@ -20,10 +20,11 @@ bool FieldManager::Start()
 
 void FieldManager::Render(RenderContext& rc)
 {
-
+	// ステージを描画。
 	stageSpriteRender.Draw(rc);
-	DrawBlocks(rc);
 
+	// フィールドに配置されたブロックを描画。
+	DrawBlocks(rc);
 }
 
 /// <summary>
@@ -60,11 +61,10 @@ void FieldManager::DrawBlocks(RenderContext& rc)
 }
 
 /// <summary>
-/// テトリミノのブロック位置情報を保存し、対応するスプライトを初期化して描画位置を設定します。
-/// 既存のテトリミノオブジェクトを削除し、新しいテトリミノを生成します。
+/// フィールド上にテトリミノのブロックを保存し、各ブロックのスプライトを配置・更新します。
 /// </summary>
-/// <param name="gridPos">テトリミノの各ブロックのグリッド座標を格納した配列。</param>
-/// <param name="path">ブロックのスプライト画像ファイルへのパス。</param>
+/// <param name="gridPos">テトリミノの各ブロックのフィールド上の座標（Vector2型の配列）。</param>
+/// <param name="blockSpriteRender">各ブロックに対応するスプライトレンダラー（SpriteRender型の配列）。</param>
 void FieldManager::SaveTetrimino(const std::array<Vector2, MINO_PARTS_COUNT>& gridPos, std::array<SpriteRender*, MINO_PARTS_COUNT> blockSpriteRender)
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; ++i) {

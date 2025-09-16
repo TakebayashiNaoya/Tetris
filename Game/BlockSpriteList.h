@@ -24,6 +24,8 @@ enum EnMinoKinds
 class BlockSpriteList :public IGameObject
 {
 public:
+	bool Start() override final;
+
 	/// <summary> 
 	/// 指定した種類のブロックのスプライトレンダーのアドレスを取得する。
 	/// </summary>
@@ -32,18 +34,11 @@ public:
 		return &blockSpriteRender[kind];
 	}
 
-public:
-	bool Start() override final;
-
-
 private:
 	/// <summary>
 	/// ブロックのスプライトレンダーの配列。
 	/// </summary>
 	std::array<SpriteRender, enMinoKinds_Num> blockSpriteRender;
-
-	//std::array<std::array<SpriteRender, MINO_PARTS_COUNT>, enMinoKinds_Num> blockSpriteRender;
-
 };
 
 /// <summary>

@@ -5,26 +5,8 @@
 
 namespace
 {
-	//std::string TETRIMINO_FILE_PATH = "Assets/Tetrimino/Mino_";	// テトリミノのファイルパス。
-	//std::string EXTENSION_DDS = ".dds";							// スプライトの拡張子。
-	const Vector2 SPAWN_GRID_POSITION = { 4,18 };				// テトリミノのスポーン位置。
-
-	/// <summary>
-	/// 生成するテトリミノの情報。
-	/// </summary>
-	//struct MinoInfo
-	//{
-	//	char fileName;										// ファイルの名前。
-	//Vector2 BlocksLocalPositionRatio[MINO_PARTS_COUNT];	// 中央のテトリミノからの相対座標比率。
-
-	//	/// <summary>
-	//	/// テトリミノのスプライトのファイルパスを取得する処理。
-	//	/// </summary>
-	//	std::string GetFullPath() const
-	//	{
-	//		return TETRIMINO_FILE_PATH + fileName + EXTENSION_DDS;
-	//	}
-	//};
+	const Vector2 SPAWN_GRID_POSITION = { 4,18 };	// テトリミノのスポーン位置。
+	const float DELETE_TIME = 0.9f;					// テトリミノが最下部に到達してからフィールドに固定されるまでの時間。
 
 	/// <summary>
 	/// テトリミノのスプライトファイル名と相対座標の一覧。
@@ -32,13 +14,13 @@ namespace
 	Vector2 BlocksLocalPositionRatio[MINO_KINDS_COUNT][MINO_PARTS_COUNT] =
 	{
 		//	1ブロック目,	2ブロック目,	3ブロック目,	4ブロック目 
-			{{-1.5f,-0.5f},	{-0.5f,-0.5f},	{0.5f,-0.5f},	{1.5f,-0.5f}},
-			{{0,0},			{-1,1},			{-1,0},			{1,0}		},
-			{{0,0},			{-1,0},			{1,0},			{1,1}		},
-			{{-0.5f,0.5f},	{-0.5f,-0.5f},	{0.5f,0.5f},	{0.5f,-0.5f}},
-			{{0,0},			{-1,0},			{0,1},			{1,1}		},
-			{{0,0},			{-1,0},			{1,1},			{1,0}		},
-			{{0,0},			{-1,1},			{0,1},			{1,0}		}
+			{{-1.5f,0.5f},	{-0.5f,0.5f},	{0.5f,0.5f},	{1.5f,0.5f}},	// I
+			{{0,0},			{-1,1},			{-1,0},			{1,0}		},	// J
+			{{0,0},			{-1,0},			{1,0},			{1,1}		},	// L
+			{{-0.5f,0.5f},	{-0.5f,-0.5f},	{0.5f,0.5f},	{0.5f,-0.5f}},	// O
+			{{0,0},			{-1,0},			{0,1},			{1,1}		},	// S
+			{{0,0},			{-1,0},			{0,1},			{1,0}		},	// T
+			{{0,0},			{-1,1},			{0,1},			{1,0}		}	// Z
 	};
 
 }
@@ -54,16 +36,13 @@ bool Tetrimino::Start()
 	srand(time(nullptr));
 
 	// 生成するテトリミノの種類を抽選。
-	selectedMinoKind = rand() % enMinoKinds_Num;
+	m_selectedMinoKind = rand() % enMinoKinds_Num;
 
 	// テトリミノの画像を設定する。
 	SetupSpriteImage();
 
 	// テトリミノの回転基点位置を設定。
 	SetupPivotPosition();
-
-	// 中央ブロックからの相対座標を計算。
-	CalcInitialLocalPositions();
 
 	// 回転のステートに応じてブロックの移動先位置を計算。
 	CalcLocalGridPositionsForRotationState();
@@ -94,17 +73,14 @@ void Tetrimino::Update()
 	// 移動先位置をレンダーのポジションに設定。
 	SetupSpritePosition();
 
-	// 最下部に到達したか、他のテトリミノの上に乗ったかを判定。
-	if (IsReachedStageBottom() || IsTetriminoBelow()) {
-		// フィールドにブロックを設置。
-		m_fieldManager->SaveTetrimino(blocksCurrentGlobalGridPositions, blockSpriteRender);
-	}
+	// 最後にフィールドに固定する。
+	SaveToFieldManager();
 }
 
 void Tetrimino::Render(RenderContext& rc)
 {
 	// テトリミノの各ブロックを描画。
-	for (auto sprite : blockSpriteRender) {
+	for (auto sprite : m_blockSpriteRender) {
 		sprite->Draw(rc);
 	}
 }
@@ -118,13 +94,9 @@ void Tetrimino::Render(RenderContext& rc)
 /// </summary>
 void Tetrimino::SetupSpriteImage()
 {
-	for (auto it = blockSpriteRender.begin(); it != blockSpriteRender.end(); ++it) {
-		*it = BlockCreateFactory::Create(selectedMinoKind);//m_blockSpriteList->GetBlockSpriteRenderAddress(selectedMinoKind);
+	for (auto it = m_blockSpriteRender.begin(); it != m_blockSpriteRender.end(); ++it) {
+		*it = BlockCreateFactory::Create(m_selectedMinoKind);
 	}
-
-	//for (auto* sprite : blockSpriteRender) {
-	//	sprite = m_blockSpriteList->GetBlockSpriteRenderAddress(selectedMinoKind);
-	//}
 }
 
 /// <summary>
@@ -133,8 +105,8 @@ void Tetrimino::SetupSpriteImage()
 void Tetrimino::SetupSpritePosition()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
-		blockSpriteRender[i]->SetPosition({ blocksCurrentGlobalPositions[i].x, blocksCurrentGlobalPositions[i].y,0.0f });
-		blockSpriteRender[i]->Update();
+		m_blockSpriteRender[i]->SetPosition({ m_blocksCurrentGlobalPositions[i].x, m_blocksCurrentGlobalPositions[i].y,0.0f });
+		m_blockSpriteRender[i]->Update();
 	}
 }
 
@@ -148,24 +120,13 @@ void Tetrimino::SetupSpritePosition()
 void Tetrimino::SetupPivotPosition()
 {
 	// テトリミノの回転基点位置にスポーン位置を代入。
-	minoPivotGridPosition = SPAWN_GRID_POSITION;
+	m_minoPivotGridPosition = SPAWN_GRID_POSITION;
 
 	// I、Oのミノは基点を上に半ブロックずらす。
-	if (selectedMinoKind == enMinoKinds_I || selectedMinoKind == enMinoKinds_O)
+	if (m_selectedMinoKind == enMinoKinds_I || m_selectedMinoKind == enMinoKinds_O)
 	{
-		minoPivotGridPosition.x += 0.5;
-		minoPivotGridPosition.y += 0.5;
-	}
-}
-
-/// <summary>
-/// 基点からのデフォルト（生成時）ローカル座標を計算します。
-/// </summary>
-void Tetrimino::CalcInitialLocalPositions()
-{
-	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
-		blocksInitialLocalPositions[i].x = BlocksLocalPositionRatio[selectedMinoKind][i].x * BLOCK_SIZE;
-		blocksInitialLocalPositions[i].y = BlocksLocalPositionRatio[selectedMinoKind][i].y * BLOCK_SIZE;
+		m_minoPivotGridPosition.x += 0.5;
+		m_minoPivotGridPosition.y += 0.5;
 	}
 }
 
@@ -176,23 +137,31 @@ void Tetrimino::SwitchRotationState()
 {
 	// Aボタンで右回転。
 	if (g_pad[0]->IsTrigger(enButtonA)) {
-		int beforeState = rotationState;
-		rotationState = (rotationState + 1) % enRotationDeg_Num;
+		// 回転状態を保存。
+		int beforeState = m_rotationState;
+		// 回転状態を更新。
+		m_rotationState = (m_rotationState + 1) % enRotationDeg_Num;
 		CalcLocalGridPositionsForRotationState();
 		CalcBlocksCurrentGlobalGridPositions();
 
-		TryWallKick();
-		CheckNeedNearMinoKick(beforeState);
+		// 回転前の状態と回転後の状態をもとに、SRSを実行。
+		SuperRotationSystem(beforeState, m_rotationState);
+		CalcLocalGridPositionsForRotationState();
+		CalcBlocksCurrentGlobalGridPositions();
 	}
 	// Bボタンで左回転。
 	else if (g_pad[0]->IsTrigger(enButtonB)) {
-		int beforeState = rotationState;
-		rotationState = (rotationState + enRotationDeg_Num - 1) % enRotationDeg_Num;
+		// 回転状態を保存。
+		int beforeState = m_rotationState;
+		// 回転状態を更新。
+		m_rotationState = (m_rotationState + enRotationDeg_Num - 1) % enRotationDeg_Num;
 		CalcLocalGridPositionsForRotationState();
 		CalcBlocksCurrentGlobalGridPositions();
 
-		TryWallKick();
-		CheckNeedNearMinoKick(beforeState);
+		// 回転前の状態と回転後の状態をもとに、SRSを実行。
+		SuperRotationSystem(beforeState, m_rotationState);
+		CalcLocalGridPositionsForRotationState();
+		CalcBlocksCurrentGlobalGridPositions();
 	}
 }
 
@@ -202,9 +171,9 @@ void Tetrimino::SwitchRotationState()
 /// <param name="pos">回転させる2次元ベクトル。</param>
 /// <param name="rotationDeg">回転状態。</param>
 /// <returns>回転後の2次元ベクトル。</returns>
-Vector2 Tetrimino::Rotate(Vector2 pos, int rotationDeg)
+Vector2 Tetrimino::Rotate(Vector2 pos, int rotationState)
 {
-	switch (rotationDeg)
+	switch (rotationState)
 	{
 	case enRotationDeg_0:   return pos;
 	case enRotationDeg_90:  return { pos.y, -pos.x };
@@ -220,31 +189,31 @@ Vector2 Tetrimino::Rotate(Vector2 pos, int rotationDeg)
 void Tetrimino::CalcLocalGridPositionsForRotationState()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; ++i) {
-		blocksCurrentLocalGridPositions[i] = Rotate(BlocksLocalPositionRatio[selectedMinoKind][i], rotationState);
+		m_blocksCurrentLocalGridPositions[i] = Rotate(BlocksLocalPositionRatio[m_selectedMinoKind][i], m_rotationState);
 	}
 }
 
 /// <summary>
-/// 基点からのローカル座標をもとに、各ブロックのグローバルグリッド座標を計算します。
+/// 基点とローカル座標をもとに、各ブロックのグローバルグリッド座標を計算します。
 /// </summary>
 void Tetrimino::CalcBlocksCurrentGlobalGridPositions()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
-		blocksCurrentGlobalGridPositions[i] =
-		{ blocksCurrentLocalGridPositions[i].x + minoPivotGridPosition.x,
-		  blocksCurrentLocalGridPositions[i].y + minoPivotGridPosition.y };
+		m_blocksCurrentGlobalGridPositions[i] =
+		{ m_blocksCurrentLocalGridPositions[i].x + m_minoPivotGridPosition.x,
+		  m_blocksCurrentLocalGridPositions[i].y + m_minoPivotGridPosition.y };
 	}
 }
 
 /// <summary>
-/// X、Yのグリッド座標をもとに、FieldManagerから座標を取得。。
+/// X、Yのグリッド座標をもとに、FieldManagerから座標を取得。
 /// </summary>
 void Tetrimino::CalcBlocksCurrentGlobalPositions()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
-		blocksCurrentGlobalPositions[i] =
+		m_blocksCurrentGlobalPositions[i] =
 			m_fieldManager->GetCheckFieldPosition
-			(blocksCurrentGlobalGridPositions[i].x, blocksCurrentGlobalGridPositions[i].y);
+			(m_blocksCurrentGlobalGridPositions[i].x, m_blocksCurrentGlobalGridPositions[i].y);
 	}
 }
 
@@ -257,7 +226,7 @@ void Tetrimino::CalcBlocksCurrentGlobalPositions()
 /// </summary>
 void Tetrimino::MoveDown()
 {
-	minoPivotGridPosition.y--;
+	m_minoPivotGridPosition.y--;
 }
 
 /// <summary> 
@@ -265,7 +234,8 @@ void Tetrimino::MoveDown()
 /// </summary>
 void Tetrimino::MoveLeft()
 {
-	minoPivotGridPosition.x--;
+	m_minoPivotGridPosition.x--;
+	m_deleteTimer = 0.0f;
 }
 
 /// <summary> 
@@ -273,7 +243,8 @@ void Tetrimino::MoveLeft()
 /// </summary>
 void Tetrimino::MoveRight()
 {
-	minoPivotGridPosition.x++;
+	m_minoPivotGridPosition.x++;
+	m_deleteTimer = 0.0f;
 }
 
 /// <summary>
@@ -282,20 +253,20 @@ void Tetrimino::MoveRight()
 void Tetrimino::HandleInputMovement()
 {
 	if (g_pad[0]->IsTrigger(enButtonLeft)) {
+		// 左に移動できない場合は何もしない。
+		if (IsBlockedLeft()) { return; }
 		MoveLeft();
 		CalcBlocksCurrentGlobalGridPositions();
-
-		TryWallKick();
-		CheckNeedNearMinoKick(0);
 	}
 	if (g_pad[0]->IsTrigger(enButtonRight)) {
+		// 右に移動できない場合は何もしない。
+		if (IsBlockedRight()) { return; }
 		MoveRight();
 		CalcBlocksCurrentGlobalGridPositions();
-
-		TryWallKick();
-		CheckNeedNearMinoKick(0);
 	}
 	if (g_pad[0]->IsTrigger(enButtonDown)) {
+		// 下に移動できない場合は何もしない。
+		if (IsBlockedBelow()) { return; }
 		MoveDown();
 		CalcBlocksCurrentGlobalGridPositions();
 	}
@@ -306,175 +277,366 @@ void Tetrimino::HandleInputMovement()
 /// </summary>
 void Tetrimino::AddGravity()
 {
+	// 下に移動できない場合は何もしない。
+	if (IsBlockedBelow()) { return; }
+
 	// 秒数をカウント。
-	spawnTimer += g_gameTime->GetFrameDeltaTime();
+	m_fallTimer += g_gameTime->GetFrameDeltaTime();
 
 	// 1秒経ったら1ブロック分落下する。
-	if (spawnTimer > 1.0f) {
+	if (m_fallTimer > 1.0f) {
 		MoveDown();
-		spawnTimer = 0.0f;
+		m_fallTimer = 0.0f;
 	}
 
 	CalcBlocksCurrentGlobalGridPositions();
 }
 
+
+
+//=== 衝突判定 ===//
+
 /// <summary>
-/// テトリミノが壁にめり込んだ場合に、位置を補正する処理。
+/// 左側にステージの端、または他のテトリミノがあるかどうかを判定する処理。
+/// ※GetCheckFieldFlag(0～9,0～19)は範囲外を指定するとエラーが起きるため、エリア外のチェックを先に行っている。
 /// </summary>
-void Tetrimino::TryWallKick()
+/// <returns> 左側にステージの端、または他のテトリミノがあればtrue、なければfalseを返す。</returns>
+bool Tetrimino::IsBlockedLeft()
 {
-	// 左右にはみ出している量を調べる。
-	int overflowXLeft = 0;
-	int overflowXRight = 0;
-
-	for (auto& blockPos : blocksCurrentGlobalGridPositions)
+	for (auto& blockPos : m_blocksCurrentGlobalGridPositions)
 	{
-		// エリア外に出た時の処理。
-		if (blockPos.x < 0)
-		{
-			int overflow = -blockPos.x;
-			overflowXLeft = max(overflowXLeft, overflow);
+		// いずれかのブロックがステージの左端にある場合。
+		if (blockPos.x == 0) {
+			return true;
 		}
-		else if (blockPos.x >= PLAYABLE_WIDTH_IN_BLOCKS)
-		{
-			int overflow = blockPos.x - (PLAYABLE_WIDTH_IN_BLOCKS - 1);
-			overflowXRight = max(overflowXRight, overflow);
+		// いずれかのブロックの左側に他のテトリミノがある場合。
+		else if (m_fieldManager->GetCheckFieldFlag(blockPos.x - 1, blockPos.y)) {
+			return true;
 		}
 	}
-
-	// 一度だけ補正
-	if (overflowXLeft > 0.0f)
-	{
-		minoPivotGridPosition.x += overflowXLeft;
-	}
-	else if (overflowXRight > 0.0f)
-	{
-		minoPivotGridPosition.x -= overflowXRight;
-	}
-
-	CalcBlocksCurrentGlobalGridPositions();
+	return false;
 }
 
 /// <summary>
-/// 壁キックが必要かどうかを調べ、必要ならば壁キックを実行します。
+/// 右側にステージの端、または他のテトリミノがあるかどうかを判定する処理。
+/// ※GetCheckFieldFlag(0～9,0～19)は範囲外を指定するとエラーが起きるため、エリア外のチェックを先に行っている。
 /// </summary>
-/// <param name="beforeState">回転前のステートを入れる。上下下移動の場合は0を入れる。</param>
-void Tetrimino::CheckNeedNearMinoKick(int beforeState)
+/// <returns> 右側にステージの端、または他のテトリミノがあればtrue、なければfalseを返す。</returns>
+bool Tetrimino::IsBlockedRight()
 {
-	// 左右のブロックの有無を調べる。
-	bool isThereBlockLeft = false;
-	bool isThereBlockRight = false;
+	for (auto& blockPos : m_blocksCurrentGlobalGridPositions)
+	{
+		// いずれかのブロックがステージの右端にある場合。
+		if (blockPos.x == (PLAYABLE_WIDTH_IN_BLOCKS - 1)) {
+			return true;
+		}
+		// いずれかのブロックの右側に他のテトリミノがある場合。
+		else if (m_fieldManager->GetCheckFieldFlag(blockPos.x + 1, blockPos.y)) {
+			return true;
+		}
+	}
+	return false;
+}
 
-	for (auto& blockPos : blocksCurrentGlobalGridPositions) {
+/// <summary>
+/// 下側にステージの端、または他のテトリミノがあるかどうかを判定する処理。
+/// ※GetCheckFieldFlag(0～9,0～19)は範囲外を指定するとエラーが起きるため、エリア外のチェックを先に行っている。
+/// </summary>
+/// <returns> 下側にステージの端、または他のテトリミノがあればtrue、なければfalseを返す。</returns>
+bool Tetrimino::IsBlockedBelow()
+{
+	for (auto& blockPos : m_blocksCurrentGlobalGridPositions)
+	{
+		// いずれかのブロックがステージの下端にある場合。
+		if (blockPos.y == 0) {
+			return true;
+		}
+		// いずれかのブロックの下側に他のテトリミノがある場合。
+		else if (m_fieldManager->GetCheckFieldFlag(blockPos.x, blockPos.y - 1)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+
+
+//=== SRS(スーパーローテーションシステム) ===//
+
+/// <summary>
+/// 回転前と回転後の状態に基づいて、SRSのキックテーブルに従って位置調整を行います。
+/// </summary>
+/// <param name="beforeState">回転前のテトリミノの状態（角度）。</param>
+/// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
+void Tetrimino::SuperRotationSystem(int beforeState, int currentState)
+{
+	if (m_selectedMinoKind == enMinoKinds_I) {
+		SuperRotationSystemVersionI(beforeState, currentState);
+	}
+	else {
+		SuperRotationSystemVersionNormal(beforeState, currentState);
+	}
+}
+
+/// <summary>
+/// Iのテトリミノの回転時に、SRSのキックテーブルに従って位置調整を行います。
+/// 回転後に位置調整ができない場合は、回転前の状態に戻します。
+/// </summary>
+/// <param name="beforeState">回転前のテトリミノの状態（角度）。</param>
+/// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
+void Tetrimino::SuperRotationSystemVersionI(int beforeState, int currentState)
+{
+	if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_90) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-2, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-2, -1)) { return; }
+		else if (SuperRotationSystemCheck(1, 2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_0) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(2, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(2, 1)) { return; }
+		else if (SuperRotationSystemCheck(-1, -2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_180) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(2, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 2)) { return; }
+		else if (SuperRotationSystemCheck(2, -1)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_90) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-2, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, -2)) { return; }
+		else if (SuperRotationSystemCheck(-2, 1)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_270) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(2, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(2, 1)) { return; }
+		else if (SuperRotationSystemCheck(-1, -2)) { return; }
+	}
+	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_180) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-2, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-2, -1)) { return; }
+		else if (SuperRotationSystemCheck(1, 2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_0) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-2, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, -2)) { return; }
+		else if (SuperRotationSystemCheck(-2, 1)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_270) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(2, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 2)) { return; }
+		else if (SuperRotationSystemCheck(2, -1)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+}
+
+/// <summary>
+/// I以外のテトリミノの回転時に、SRSのキックテーブルに従って位置調整を行います。
+/// 回転後に位置調整ができない場合は、回転前の状態に戻します。
+/// </summary>
+/// <param name="beforeState">回転前のテトリミノの状態（角度）。</param>
+/// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
+void Tetrimino::SuperRotationSystemVersionNormal(int beforeState, int currentState)
+{
+	if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_90) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 1)) { return; }
+		else if (SuperRotationSystemCheck(0, -2)) { return; }
+		else if (SuperRotationSystemCheck(-1, -2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_180) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, -1)) { return; }
+		else if (SuperRotationSystemCheck(0, 2)) { return; }
+		else if (SuperRotationSystemCheck(1, 2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_270) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 1)) { return; }
+		else if (SuperRotationSystemCheck(0, -2)) { return; }
+		else if (SuperRotationSystemCheck(1, -2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_0) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, -1)) { return; }
+		else if (SuperRotationSystemCheck(0, 2)) { return; }
+		else if (SuperRotationSystemCheck(-1, +2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_270) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 1)) { return; }
+		else if (SuperRotationSystemCheck(0, -2)) { return; }
+		else if (SuperRotationSystemCheck(1, -2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_180) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, -1)) { return; }
+		else if (SuperRotationSystemCheck(0, 2)) { return; }
+		else if (SuperRotationSystemCheck(-1, 2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_90) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 0)) { return; }
+		else if (SuperRotationSystemCheck(-1, 1)) { return; }
+		else if (SuperRotationSystemCheck(0, -2)) { return; }
+		else if (SuperRotationSystemCheck(-1, -2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_0) {
+		if (SuperRotationSystemCheck(0, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, 0)) { return; }
+		else if (SuperRotationSystemCheck(1, -1)) { return; }
+		else if (SuperRotationSystemCheck(0, 2)) { return; }
+		else if (SuperRotationSystemCheck(1, 2)) { return; }
+		else {
+			m_rotationState = beforeState;
+			return;
+		}
+	}
+}
+
+/// <summary>
+/// 引数の値だけテトリミノの位置を補正し、補正後に他のテトリミノやステージ外に重なっていないかをチェックします。
+/// ※GetCheckFieldFlag(0～9,0～19)は範囲外を指定するとエラーが起きるため、エリア外のチェックを先に行っている。
+/// </summary>
+/// <param name="offsetX"> X座標の補正値。</param>
+/// <param name="offsetY"> Y座標の補正値。</param>
+/// <returns> 補正後に配置できる場合はtrue、できない場合はfalseを返す。</returns>
+bool Tetrimino::SuperRotationSystemCheck(int offsetX, int offsetY)
+{
+	int OverlapCount = 0;
+	for (auto& blockPos : m_blocksCurrentGlobalGridPositions) {
+		// X座標がエリア外に出ている場合。
+		int x = blockPos.x + offsetX;
+		if (x < 0 || x >= PLAYABLE_WIDTH_IN_BLOCKS) {
+			OverlapCount++;
+			continue;
+		}
+		// Y座標がエリア外に出ている場合。
+		int y = blockPos.y + offsetY;
+		if (y < 0 || y >= PLAYABLE_HEIGHT_IN_BLOCKS) {
+			OverlapCount++;
+			continue;
+		}
 		// 他のテトリミノと重なっている場合。
-		if (m_fieldManager->GetCheckFieldFlag(blockPos.x, blockPos.y)) {
-			// 基点より左側のブロックで、他のテトリミノと重なっている場合、左端のブロック位置を更新。
-			if (blockPos.x < minoPivotGridPosition.x) {
-				isThereBlockLeft = true;
-			}
-			// 基点より右側のブロックで、他のテトリミノと重なっている場合、右端のブロック位置を更新。
-			else if (blockPos.x > minoPivotGridPosition.x) {
-				isThereBlockRight = true;
-			}
+		if (m_fieldManager->GetCheckFieldFlag(x, y)) {
+			OverlapCount++;
 		}
 	}
-
-	// 左右両方にブロックがある場合は補正できないので何もしない。
-	if (!isThereBlockLeft && !isThereBlockRight) { return; }
-	// 左側にブロックがある場合は右に補正。
-	else if (isThereBlockLeft && !isThereBlockRight) { MinoKickLeft(); }
-	// 右側にブロックがある場合は左に補正。
-	else if (!isThereBlockLeft && isThereBlockRight) { MinoKickRight(); }
-	// 左右両方にブロックがある場合は補正できないので、回転前の状態に戻す。
-	else if (isThereBlockLeft && isThereBlockRight) {
-		rotationState = beforeState;
-		CalcLocalGridPositionsForRotationState();
+	// 重なっていなければ補正を適用。
+	if (OverlapCount == 0) {
+		m_minoPivotGridPosition.x += offsetX;
+		m_minoPivotGridPosition.y += offsetY;
 		CalcBlocksCurrentGlobalGridPositions();
+		return true;
+	}
+	// 重なっていれば補正を適用しない。
+	else {
+		return false;
 	}
 }
+
+
+
+//=== 終了時の処理 ===//
 
 /// <summary>
-/// 左側を壁キックする処理。
-/// </summary>
-void Tetrimino::MinoKickLeft()
+/// テトリミノが最下部に到達するか、他のテトリミノの上に乗ったら、フィールドマネージャーに保存。
+/// </summary> 
+void Tetrimino::SaveToFieldManager()
 {
-	// 左側を蹴る場合、重なるブロックのX座標は基点より小さくなるため、基点のX座標を初期値とする。
-	int leftMostThereIsBlockPosition = minoPivotGridPosition.x;
-	// 左側を蹴る場合、重ならないブロックのX座標は基点より大きくなる可能性があるため、右端のグリッド座標を初期値とする。
-	int leftMostNotThereIsBlockPosition = PLAYABLE_WIDTH_IN_BLOCKS;
-
-	for (auto& blockPos : blocksCurrentGlobalGridPositions) {
-		// 他のテトリミノと重なっている場合、重なっている左端のブロック位置を更新。
-		if (m_fieldManager->GetCheckFieldFlag(blockPos.x, blockPos.y)) {
-			leftMostThereIsBlockPosition = min(leftMostThereIsBlockPosition, blockPos.x);
+	// 最下部に到達したか、他のテトリミノの上に乗ったかを判定。
+	if (IsBlockedBelow()) {
+		m_deleteTimer += g_gameTime->GetFrameDeltaTime();
+		if (g_pad[0]->IsTrigger(enButtonDown)) {
+			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
 		}
-		// 他のテトリミノと重なっていない場合、重なっていない左端のブロック位置を更新。
-		else {
-			leftMostNotThereIsBlockPosition = min(leftMostNotThereIsBlockPosition, blockPos.x);
+		else if (m_deleteTimer > DELETE_TIME) {
+			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
 		}
 	}
-
-	// 重なっていない左端ブロックの位置と、重なっている左端ブロックの位置の差分を基点に加算する。
-	minoPivotGridPosition.x += leftMostNotThereIsBlockPosition - leftMostThereIsBlockPosition;
-
-	CalcBlocksCurrentGlobalGridPositions();
-}
-
-/// <summary>
-/// 右側を壁キックする処理。
-/// </summary>
-void Tetrimino::MinoKickRight()
-{
-	// 右側を蹴る場合、重なるブロックのX座標は基点より大きくなるため、基点のX座標を初期値とする。
-	int rightMostThereIsBlockPosition = minoPivotGridPosition.x;
-	// 右側を蹴る場合、重ならないブロックのX座標は基点より小さくなる可能性があるため、左端のグリッド座標を初期値とする。
-	int rightMostNotThereIsBlockPosition = 0;
-
-	for (auto& blockPos : blocksCurrentGlobalGridPositions) {
-		// 他のテトリミノと重なっている場合、重なっている右端のブロック位置を更新。
-		if (m_fieldManager->GetCheckFieldFlag(blockPos.x, blockPos.y)) {
-			rightMostThereIsBlockPosition = max(rightMostThereIsBlockPosition, blockPos.x);
-		}
-		// 他のテトリミノと重なっていない場合、重なっていない右端のブロック位置を更新。
-		else {
-			rightMostNotThereIsBlockPosition = max(rightMostNotThereIsBlockPosition, blockPos.x);
-		}
+	// 下が着かなくなったらタイマーリセット。
+	else {
+		m_deleteTimer = 0.0f;
 	}
-	// 重なっていない右端ブロックの位置と、重なっている右端ブロックの位置の差分を基点に加算する。
-	minoPivotGridPosition.x += rightMostNotThereIsBlockPosition - rightMostThereIsBlockPosition;
-
-	CalcBlocksCurrentGlobalGridPositions();
 }
 
-/// <summary>
-/// テトリミノが最下部に到達したかどうかを判定する処理。
-/// </summary>
-/// <returns>到達していればtrue、そうでなければfalseを返す。</returns>
-bool Tetrimino::IsReachedStageBottom()
-{
-	// 次に落下するポジションを保存。
-	for (auto& blockPos : blocksCurrentGlobalGridPositions) {
-		if (blockPos.y <= 0) {
-			return true;
-		}
-	}
-	return false;
-}
 
-/// <summary>
-/// テトリミノの下に他のテトリミノがあるかどうかを判定する処理。
-/// </summary>
-/// <returns>下に他のテトリミノがあればtrue、なければfalseを返す。</returns>
-bool Tetrimino::IsTetriminoBelow()
-{
-	for (auto& blockPos : blocksCurrentGlobalGridPositions) {
-		int checkY = blockPos.y - 1;
-		if (m_fieldManager->GetCheckFieldFlag(blockPos.x, checkY)) {
-			return true;
-		}
-	}
-	return false;
-}
 
 ///// <summary>
 ///// テトリミノの全てのチェックフィールドに対して指定された関数を適用します。
