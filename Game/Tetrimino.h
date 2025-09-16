@@ -1,9 +1,14 @@
 #pragma once
+#include "BlockSpriteList.h"
 
 class FieldManager;
+class BlockSpriteList;
 
-const int MINO_PARTS_COUNT = 4;	// テトリミノを構成するブロック数。
-const int MINO_KINDS_COUNT = 7;	// テトリミノの種類数。
+namespace
+{
+	const int MINO_PARTS_COUNT = 4;	// テトリミノを構成するブロック数。
+	const int MINO_KINDS_COUNT = 7;	// テトリミノの種類数。
+}
 
 class Tetrimino :public IGameObject
 {
@@ -93,8 +98,9 @@ private:
 
 
 	FieldManager* m_fieldManager;
+	BlockSpriteList* m_blockSpriteList;
 
-	std::array<SpriteRender, MINO_PARTS_COUNT> blockSpriteRender;			// 各ブロックの画像
+	std::array<SpriteRender*, MINO_PARTS_COUNT> blockSpriteRender;			// 各ブロックの画像
 	std::array<Vector2, MINO_PARTS_COUNT> blocksInitialLocalPositions;		// 初期ローカル
 	std::array<Vector2, MINO_PARTS_COUNT> blocksCurrentLocalGridPositions;	// 現在ローカル(グリッド)
 	std::array<Vector2, MINO_PARTS_COUNT> blocksCurrentGlobalPositions;		// 現在ワールド

@@ -53,7 +53,7 @@ void FieldManager::DrawBlocks(RenderContext& rc)
 		{
 			if (arrayXY.isThereBlock)
 			{
-				arrayXY.spriteRender.Draw(rc);
+				arrayXY.spriteRender->Draw(rc);
 			}
 		}
 	}
@@ -65,18 +65,17 @@ void FieldManager::DrawBlocks(RenderContext& rc)
 /// </summary>
 /// <param name="gridPos">テトリミノの各ブロックのグリッド座標を格納した配列。</param>
 /// <param name="path">ブロックのスプライト画像ファイルへのパス。</param>
-void FieldManager::SaveTetrimino(const std::array<Vector2, MINO_PARTS_COUNT>& gridPos, const char* path)
+void FieldManager::SaveTetrimino(const std::array<Vector2, MINO_PARTS_COUNT>& gridPos, std::array<SpriteRender*, MINO_PARTS_COUNT> blockSpriteRender)
 {
-	// テトリミノが停止したときの各ブロックのグリッド位置を取得。
-	for (const auto& blockPos : gridPos) {
-		auto& tmp = checkFields[blockPos.x][blockPos.y];
-		// チェックフィールドの対応する位置にブロックが存在することを設定。
-		tmp.isThereBlock = true;
+	for (int i = 0; i < MINO_PARTS_COUNT; ++i) {
+		auto& checkField = checkFields[gridPos[i].x][gridPos[i].y];
+		checkField.isThereBlock = true;
 		// テトリミノと同じ位置に同じブロック画像を描画。
-		tmp.spriteRender.Init(path, BLOCK_SIZE, BLOCK_SIZE);
-		tmp.spriteRender.SetPosition({ tmp.position.x, tmp.position.y, 0.0f });
-		tmp.spriteRender.Update();
+		checkField.spriteRender = blockSpriteRender[i];
+		checkField.spriteRender->SetPosition({ checkField.position.x, checkField.position.y, 0.0f });
+		checkField.spriteRender->Update();
 	}
+
 	DeleteGO(m_tetrimino);
 	m_tetrimino = NewGO<Tetrimino>(0, "Tetrimino");
 }

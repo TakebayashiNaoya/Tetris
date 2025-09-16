@@ -2,13 +2,12 @@
 #include <array>
 #include <vector>
 #include "Tetrimino.h"
+#include "BlockSpriteList.h"
 
 class Tetrimino;
 
 namespace
 {
-	const float BLOCK_SIZE = 40.0f;													// 1ブロックのサイズ。
-
 	const int PLAYABLE_WIDTH_IN_BLOCKS = 10;										// テトリミノを配置できる範囲（横のブロック数）
 	const int PLAYABLE_HEIGHT_IN_BLOCKS = 20;										// テトリミノを配置できる範囲（縦のブロック数）
 
@@ -32,7 +31,7 @@ public:
 	/// </summary>
 	struct OneBlockOfFieldInfo
 	{
-		SpriteRender spriteRender;
+		SpriteRender* spriteRender;
 		Vector2 position = Vector2::Zero;
 		bool isThereBlock = false;
 
@@ -93,6 +92,6 @@ public:
 		checkFields[grid_x][grid_y].isThereBlock = isThereBlock;
 	}
 
-	void SaveTetrimino(const std::array<Vector2, MINO_PARTS_COUNT>& gridPos, const char* path);
+	void SaveTetrimino(const std::array<Vector2, MINO_PARTS_COUNT>& gridPos, std::array<SpriteRender*, MINO_PARTS_COUNT> blockSpriteRender);
 };
 

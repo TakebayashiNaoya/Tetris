@@ -5,40 +5,40 @@
 
 namespace
 {
-	std::string TETRIMINO_FILE_PATH = "Assets/Tetrimino/Mino_";	// テトリミノのファイルパス。
-	std::string EXTENSION_DDS = ".dds";							// スプライトの拡張子。
+	//std::string TETRIMINO_FILE_PATH = "Assets/Tetrimino/Mino_";	// テトリミノのファイルパス。
+	//std::string EXTENSION_DDS = ".dds";							// スプライトの拡張子。
 	const Vector2 SPAWN_GRID_POSITION = { 4,18 };				// テトリミノのスポーン位置。
 
 	/// <summary>
 	/// 生成するテトリミノの情報。
 	/// </summary>
-	struct MinoInfo
-	{
-		char fileName;									// ファイルの名前。
-		Vector2 BlocksLocalPositionRatio[MINO_PARTS_COUNT];	// 中央のテトリミノからの相対座標比率。
+	//struct MinoInfo
+	//{
+	//	char fileName;										// ファイルの名前。
+	//Vector2 BlocksLocalPositionRatio[MINO_PARTS_COUNT];	// 中央のテトリミノからの相対座標比率。
 
-		/// <summary>
-		/// テトリミノのスプライトのファイルパスを取得する処理。
-		/// </summary>
-		std::string GetFullPath() const
-		{
-			return TETRIMINO_FILE_PATH + fileName + EXTENSION_DDS;
-		}
-	};
+	//	/// <summary>
+	//	/// テトリミノのスプライトのファイルパスを取得する処理。
+	//	/// </summary>
+	//	std::string GetFullPath() const
+	//	{
+	//		return TETRIMINO_FILE_PATH + fileName + EXTENSION_DDS;
+	//	}
+	//};
 
 	/// <summary>
 	/// テトリミノのスプライトファイル名と相対座標の一覧。
 	/// </summary>
-	MinoInfo Minos[MINO_KINDS_COUNT] =
+	Vector2 BlocksLocalPositionRatio[MINO_KINDS_COUNT][MINO_PARTS_COUNT] =
 	{
-		//	ミノの種類,	1ブロック目,	2ブロック目,	3ブロック目,	4ブロック目 
-			{'I',		{{-1.5f,-0.5f},	{-0.5f,-0.5f},	{0.5f,-0.5f},	{1.5f,-0.5f}}},
-			{'J',		{{0,0},			{-1,1},			{-1,0},			{1,0}		}},
-			{'L',		{{0,0},			{-1,0},			{1,0},			{1,1}		}},
-			{'O',		{{-0.5f,0.5f},	{-0.5f,-0.5f},	{0.5f,0.5f},	{0.5f,-0.5f}}},
-			{'S',		{{0,0},			{-1,0},			{0,1},			{1,1}		}},
-			{'T',		{{0,0},			{-1,0},			{1,1},			{1,0}		}},
-			{'Z',		{{0,0},			{-1,1},			{0,1},			{1,0}		}}
+		//	1ブロック目,	2ブロック目,	3ブロック目,	4ブロック目 
+			{{-1.5f,-0.5f},	{-0.5f,-0.5f},	{0.5f,-0.5f},	{1.5f,-0.5f}},
+			{{0,0},			{-1,1},			{-1,0},			{1,0}		},
+			{{0,0},			{-1,0},			{1,0},			{1,1}		},
+			{{-0.5f,0.5f},	{-0.5f,-0.5f},	{0.5f,0.5f},	{0.5f,-0.5f}},
+			{{0,0},			{-1,0},			{0,1},			{1,1}		},
+			{{0,0},			{-1,0},			{1,1},			{1,0}		},
+			{{0,0},			{-1,1},			{0,1},			{1,0}		}
 	};
 
 }
@@ -48,11 +48,13 @@ bool Tetrimino::Start()
 	// フィールドマネージャーを取得。
 	m_fieldManager = FindGO<FieldManager>("FieldManager");
 
+	m_blockSpriteList = FindGO<BlockSpriteList>("BlockSpriteList");
+
 	// テトリミノを完全ランダムにする処理。
 	srand(time(nullptr));
 
 	// 生成するテトリミノの種類を抽選。
-	selectedMinoKind = rand() % MINO_KINDS_COUNT;
+	selectedMinoKind = rand() % enMinoKinds_Num;
 
 	// テトリミノの画像を設定する。
 	SetupSpriteImage();
@@ -92,18 +94,18 @@ void Tetrimino::Update()
 	// 移動先位置をレンダーのポジションに設定。
 	SetupSpritePosition();
 
-	// 最下部に到達したかどうかを判定。
+	// 最下部に到達したか、他のテトリミノの上に乗ったかを判定。
 	if (IsReachedStageBottom() || IsTetriminoBelow()) {
 		// フィールドにブロックを設置。
-		m_fieldManager->SaveTetrimino(blocksCurrentGlobalGridPositions, Minos[selectedMinoKind].GetFullPath().c_str());
+		m_fieldManager->SaveTetrimino(blocksCurrentGlobalGridPositions, blockSpriteRender);
 	}
 }
 
 void Tetrimino::Render(RenderContext& rc)
 {
 	// テトリミノの各ブロックを描画。
-	for (auto& sprite : blockSpriteRender) {
-		sprite.Draw(rc);
+	for (auto sprite : blockSpriteRender) {
+		sprite->Draw(rc);
 	}
 }
 
@@ -116,9 +118,13 @@ void Tetrimino::Render(RenderContext& rc)
 /// </summary>
 void Tetrimino::SetupSpriteImage()
 {
-	for (auto& sprite : blockSpriteRender) {
-		sprite.Init(Minos[selectedMinoKind].GetFullPath().c_str(), BLOCK_SIZE, BLOCK_SIZE);
+	for (auto it = blockSpriteRender.begin(); it != blockSpriteRender.end(); ++it) {
+		*it = BlockCreateFactory::Create(selectedMinoKind);//m_blockSpriteList->GetBlockSpriteRenderAddress(selectedMinoKind);
 	}
+
+	//for (auto* sprite : blockSpriteRender) {
+	//	sprite = m_blockSpriteList->GetBlockSpriteRenderAddress(selectedMinoKind);
+	//}
 }
 
 /// <summary>
@@ -127,8 +133,8 @@ void Tetrimino::SetupSpriteImage()
 void Tetrimino::SetupSpritePosition()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
-		blockSpriteRender[i].SetPosition({ blocksCurrentGlobalPositions[i].x, blocksCurrentGlobalPositions[i].y,0.0f });
-		blockSpriteRender[i].Update();
+		blockSpriteRender[i]->SetPosition({ blocksCurrentGlobalPositions[i].x, blocksCurrentGlobalPositions[i].y,0.0f });
+		blockSpriteRender[i]->Update();
 	}
 }
 
@@ -145,7 +151,7 @@ void Tetrimino::SetupPivotPosition()
 	minoPivotGridPosition = SPAWN_GRID_POSITION;
 
 	// I、Oのミノは基点を上に半ブロックずらす。
-	if (Minos[selectedMinoKind].fileName == 'I' || Minos[selectedMinoKind].fileName == 'O')
+	if (selectedMinoKind == enMinoKinds_I || selectedMinoKind == enMinoKinds_O)
 	{
 		minoPivotGridPosition.x += 0.5;
 		minoPivotGridPosition.y += 0.5;
@@ -158,8 +164,8 @@ void Tetrimino::SetupPivotPosition()
 void Tetrimino::CalcInitialLocalPositions()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
-		blocksInitialLocalPositions[i].x = Minos[selectedMinoKind].BlocksLocalPositionRatio[i].x * BLOCK_SIZE;
-		blocksInitialLocalPositions[i].y = Minos[selectedMinoKind].BlocksLocalPositionRatio[i].y * BLOCK_SIZE;
+		blocksInitialLocalPositions[i].x = BlocksLocalPositionRatio[selectedMinoKind][i].x * BLOCK_SIZE;
+		blocksInitialLocalPositions[i].y = BlocksLocalPositionRatio[selectedMinoKind][i].y * BLOCK_SIZE;
 	}
 }
 
@@ -214,7 +220,7 @@ Vector2 Tetrimino::Rotate(Vector2 pos, int rotationDeg)
 void Tetrimino::CalcLocalGridPositionsForRotationState()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; ++i) {
-		blocksCurrentLocalGridPositions[i] = Rotate(Minos[selectedMinoKind].BlocksLocalPositionRatio[i], rotationState);
+		blocksCurrentLocalGridPositions[i] = Rotate(BlocksLocalPositionRatio[selectedMinoKind][i], rotationState);
 	}
 }
 
