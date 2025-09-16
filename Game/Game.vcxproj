@@ -223,6 +223,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BlockSpriteList.cpp" />
     <ClCompile Include="FieldManager.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
@@ -235,6 +236,7 @@
     <ClCompile Include="Tetrimino.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BlockSpriteList.h" />
     <ClInclude Include="FieldManager.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="stdafx.h" />
