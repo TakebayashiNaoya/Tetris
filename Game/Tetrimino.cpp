@@ -7,6 +7,9 @@ namespace
 {
 	const Vector2 SPAWN_GRID_POSITION = { 4,18 };	// テトリミノのスポーン位置。
 	const float DELETE_TIME = 0.9f;					// テトリミノが最下部に到達してからフィールドに固定されるまでの時間。
+	const float PIVOT_OFFSET = 0.5f;				// 半ブロックのサイズ。
+	const float REPEAT_MOVE_START_DELAY = 0.3f;		// 移動のリピート開始までの遅延時間。
+	const float REPEAT_MOVE_INTERVAL = 0.05f;		// 移動のリピート間隔。
 
 	/// <summary>
 	/// テトリミノのスプライトファイル名と相対座標の一覧。
@@ -22,7 +25,6 @@ namespace
 			{{0,0},			{-1,0},			{0,1},			{1,0}		},	// T
 			{{0,0},			{-1,1},			{0,1},			{1,0}		}	// Z
 	};
-
 }
 
 bool Tetrimino::Start()
@@ -125,8 +127,8 @@ void Tetrimino::SetupPivotPosition()
 	// I、Oのミノは基点を上に半ブロックずらす。
 	if (m_selectedMinoKind == enMinoKinds_I || m_selectedMinoKind == enMinoKinds_O)
 	{
-		m_minoPivotGridPosition.x += 0.5;
-		m_minoPivotGridPosition.y += 0.5;
+		m_minoPivotGridPosition.x += PIVOT_OFFSET;
+		m_minoPivotGridPosition.y += PIVOT_OFFSET;
 	}
 }
 
@@ -252,23 +254,42 @@ void Tetrimino::MoveRight()
 /// </summary>
 void Tetrimino::HandleInputMovement()
 {
-	if (g_pad[0]->IsTrigger(enButtonLeft)) {
-		// 左に移動できない場合は何もしない。
-		if (IsBlockedLeft()) { return; }
-		MoveLeft();
+	HandleDirectionalInput(enButtonLeft, IsBlockedLeft(), [&] { MoveLeft(); });
+	HandleDirectionalInput(enButtonRight, IsBlockedRight(), [&] { MoveRight(); });
+	HandleDirectionalInput(enButtonDown, IsBlockedBelow(), [&] { MoveDown(); });
+}
+
+/// <summary>
+/// テトリミノの方向入力を処理し、必要に応じて移動アクションを実行します。
+/// </summary>
+/// <param name="button">処理する方向入力ボタン。</param>
+/// <param name="isBlocked">移動がブロックされているかどうかを示すフラグ。</param>
+/// <param name="moveFunc">テトリミノを移動させるための関数オブジェクト。</param>
+void Tetrimino::HandleDirectionalInput(EnButton button, bool isBlocked, std::function<void()> moveFunc)
+{
+	// トリガー入力で即座に1ブロック分移動。
+	if (g_pad[0]->IsTrigger(button)) {
+		if (isBlocked) return;
+		moveFunc();
 		CalcBlocksCurrentGlobalGridPositions();
+		m_pressTimer = 0.0f;
 	}
-	if (g_pad[0]->IsTrigger(enButtonRight)) {
-		// 右に移動できない場合は何もしない。
-		if (IsBlockedRight()) { return; }
-		MoveRight();
-		CalcBlocksCurrentGlobalGridPositions();
-	}
-	if (g_pad[0]->IsTrigger(enButtonDown)) {
-		// 下に移動できない場合は何もしない。
-		if (IsBlockedBelow()) { return; }
-		MoveDown();
-		CalcBlocksCurrentGlobalGridPositions();
+
+	// 長押しで連続移動。
+	else if (g_pad[0]->IsPress(button)) {
+		if (isBlocked) return;
+
+		// 一定時間長押ししたら連続移動開始。
+		m_pressTimer += g_gameTime->GetFrameDeltaTime();
+		if (m_pressTimer < REPEAT_MOVE_START_DELAY) return;
+
+		// 一定間隔で連続移動。
+		m_moveIntervalTimer += g_gameTime->GetFrameDeltaTime();
+		if (m_moveIntervalTimer > REPEAT_MOVE_INTERVAL) {
+			moveFunc();
+			CalcBlocksCurrentGlobalGridPositions();
+			m_moveIntervalTimer = 0.0f;
+		}
 	}
 }
 
@@ -623,7 +644,7 @@ void Tetrimino::SaveToFieldManager()
 	// 最下部に到達したか、他のテトリミノの上に乗ったかを判定。
 	if (IsBlockedBelow()) {
 		m_deleteTimer += g_gameTime->GetFrameDeltaTime();
-		if (g_pad[0]->IsTrigger(enButtonDown)) {
+		if (g_pad[0]->IsPress(enButtonDown)) {
 			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
 		}
 		else if (m_deleteTimer > DELETE_TIME) {
