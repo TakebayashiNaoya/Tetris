@@ -108,6 +108,14 @@ private:
 	/// </summary>
 	void HandleInputMovement();
 
+	/// <summary>
+	/// テトリミノの方向入力を処理し、必要に応じて移動アクションを実行します。
+	/// </summary>
+	/// <param name="button">処理する方向入力ボタン。</param>
+	/// <param name="isBlocked">移動がブロックされているかどうかを示すフラグ。</param>
+	/// <param name="moveFunc">テトリミノを移動させるための関数オブジェクト。</param>
+	void HandleDirectionalInput(EnButton button, bool isBlocked, std::function<void()> moveFunc);
+
 	/// <summary> 
 	/// 時間経過による落下（重力）を適用します。
 	/// </summary>
@@ -202,5 +210,7 @@ private:
 	int m_rotationState = 0;													// テトリミノの回転状態を格納する変数。
 	int m_selectedMinoKind = 0;													// 生成するテトリミノの種類を格納する変数。
 	float m_fallTimer = 0.0f;													// タイマー。
+	float m_pressTimer = 0.0f;													// 自動落下までの長押しタイマー。
+	float m_moveIntervalTimer = 0.0f;											// 移動のインターバルタイマー。
 	float m_deleteTimer = 0.0f;													// テトリミノ削除タイマー。
 };
