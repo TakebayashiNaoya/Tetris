@@ -4,7 +4,7 @@
 #include<InitGUID.h>
 #include<dxgidebug.h>
 
-#include "Game.h"
+#include "Title.h"
 #include "BlockSpriteList.h"
 
 
@@ -35,8 +35,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	//////////////////////////////////////
 
 	NewGO<BlockSpriteList>(0, "BlockSpriteList");
-	//Gameクラスのオブジェクトを作成。
-	NewGO<Game>(0, "Game");
+
+	NewGO<Title>(0, "Title");
 
 	//////////////////////////////////////
 	// 初期化を行うコードを書くのはここまで！！！

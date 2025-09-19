@@ -15,6 +15,11 @@
     <ClCompile Include="FieldManager.cpp" />
     <ClCompile Include="Tetrimino.cpp" />
     <ClCompile Include="BlockSpriteList.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
+    <ClCompile Include="Title.cpp" />
+    <ClCompile Include="BackGround.cpp" />
+    <ClCompile Include="ResultView.cpp" />
+    <ClCompile Include="ScoreView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -25,5 +30,11 @@
     <ClInclude Include="FieldManager.h" />
     <ClInclude Include="Tetrimino.h" />
     <ClInclude Include="BlockSpriteList.h" />
+    <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="Title.h" />
+    <ClInclude Include="BackGround.h" />
+    <ClInclude Include="ResultView.h" />
+    <ClInclude Include="ScoreView.h" />
+    <ClInclude Include="TextTemplate.h" />
   </ItemGroup>
 </Project>

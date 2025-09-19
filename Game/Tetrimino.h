@@ -6,27 +6,13 @@ class BlockSpriteList;
 
 namespace
 {
-	const int MINO_PARTS_COUNT = 4;	// テトリミノを構成するブロック数。
-	const int MINO_KINDS_COUNT = 7;	// テトリミノの種類数。
+	constexpr int MINO_PARTS_COUNT = 4;	// テトリミノを構成するブロック数。
+	constexpr int MINO_KINDS_COUNT = 7;	// テトリミノの種類数。
 }
 
 class Tetrimino :public IGameObject
 {
 private:
-	/// <summary> 
-	/// テトリミノの回転状態。
-	/// </summary>
-	enum EnRotationDeg
-	{
-		enRotationDeg_0,
-		enRotationDeg_90,
-		enRotationDeg_180,
-		enRotationDeg_270,
-		enRotationDeg_Num
-	};
-
-
-
 	//=== ライフサイクル ===//
 	bool Start()override final;
 	void Update()override final;
@@ -155,29 +141,13 @@ private:
 	void SuperRotationSystem(int beforeState, int currentState);
 
 	/// <summary>
-	/// Iのテトリミノの回転時に、SRSのキックテーブルに従って位置調整を行います。
-	/// 回転後に位置調整ができない場合は、回転前の状態に戻します。
-	/// </summary>
-	/// <param name="beforeState">回転前のテトリミノの状態（角度）。</param>
-	/// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
-	void SuperRotationSystemVersionI(int beforeState, int currentState);
-
-	/// <summary>
-	/// I以外のテトリミノの回転時に、SRSのキックテーブルに従って位置調整を行います。
-	/// 回転後に位置調整ができない場合は、回転前の状態に戻します。
-	/// </summary>
-	/// <param name="beforeState">回転前のテトリミノの状態（角度）。</param>
-	/// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
-	void SuperRotationSystemVersionNormal(int beforeState, int currentState);
-
-	/// <summary>
 	/// 引数の値だけテトリミノの位置を補正し、補正後に他のテトリミノやステージ外に重なっていないかをチェックします。
 	/// ※GetCheckFieldFlag(0～9,0～19)は範囲外を指定するとエラーが起きるため、エリア外のチェックを先に行っている。
 	/// </summary>
 	/// <param name="offsetX"> X座標の補正値。</param>
 	/// <param name="offsetY"> Y座標の補正値。</param>
 	/// <returns> 補正後に配置できる場合はtrue、できない場合はfalseを返す。</returns>
-	bool SuperRotationSystemCheck(int beforeState, int currentState);
+	bool SRS_Check(Vector2 offset);
 
 
 
