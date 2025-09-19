@@ -3,13 +3,13 @@
 
 namespace
 {
-	const float BLOCK_SIZE = 40.0f;	// 1ブロックのサイズ。
+	constexpr float BLOCK_SIZE = 40.0f;	// 1ブロックのサイズ。
 }
 
 /// <summary>
 /// ブロックスプライトの種類を表す列挙型。
 /// </summary>
-enum EnMinoKinds
+enum class EnMinoKinds : uint8_t
 {
 	enMinoKinds_I,
 	enMinoKinds_J,
@@ -38,7 +38,7 @@ private:
 	/// <summary>
 	/// ブロックのスプライトレンダーの配列。
 	/// </summary>
-	std::array<SpriteRender, enMinoKinds_Num> blockSpriteRender;
+	std::array<SpriteRender, static_cast<int>(EnMinoKinds::enMinoKinds_Num)> blockSpriteRender;
 };
 
 /// <summary>

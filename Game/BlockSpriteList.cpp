@@ -3,9 +3,10 @@
 
 namespace
 {
-	const std::string TETRIMINO_FILE_PATH = "Assets/Tetrimino/Mino_";		// テトリミノのファイルパス。
-	const std::string EXTENSION_DDS = ".dds";								// スプライトの拡張子。
-	const char fileName[enMinoKinds_Num] = { 'I','J','L','O','S','T','Z' };	// ファイルの名前。
+	const std::string TITLE_LOGO_FILE_PATH = "Assets/Sprite/Tetrimino/Mino_";	// テトリミノのファイルパス。
+	const std::string EXTENSION_DDS = ".dds";									// スプライトの拡張子。
+	constexpr char fileName[static_cast<int>(EnMinoKinds::enMinoKinds_Num)] =
+	{ 'I','J','L','O','S','T','Z' };											// ファイルの名前。
 
 	/// <summary>
 	/// 指定されたファイル名からフルパス文字列を生成します。
@@ -14,14 +15,14 @@ namespace
 	/// <returns> ファイル名にパスと拡張子を付加したフルパスの文字列。</returns>
 	std::string GetFullPath(char fileName)
 	{
-		return TETRIMINO_FILE_PATH + fileName + EXTENSION_DDS;
+		return TITLE_LOGO_FILE_PATH + fileName + EXTENSION_DDS;
 	}
 }
 
 bool BlockSpriteList::Start()
 {
 	// blockSpriteRenderにブロックのスプライトをInitする。
-	for (int i = 0; i < enMinoKinds_Num; i++) {
+	for (int i = 0; i < static_cast<int>(EnMinoKinds::enMinoKinds_Num); i++) {
 		blockSpriteRender[i].Init(GetFullPath(fileName[i]).c_str(), BLOCK_SIZE, BLOCK_SIZE);
 	}
 	return true;

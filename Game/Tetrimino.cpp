@@ -2,14 +2,17 @@
 #include "Tetrimino.h"
 #include <time.h>
 #include "FieldManager.h"
+#include <algorithm>
 
 namespace
 {
-	const Vector2 SPAWN_GRID_POSITION = { 4,18 };	// テトリミノのスポーン位置。
-	const float DELETE_TIME = 0.9f;					// テトリミノが最下部に到達してからフィールドに固定されるまでの時間。
-	const float PIVOT_OFFSET = 0.5f;				// 半ブロックのサイズ。
-	const float REPEAT_MOVE_START_DELAY = 0.3f;		// 移動のリピート開始までの遅延時間。
-	const float REPEAT_MOVE_INTERVAL = 0.05f;		// 移動のリピート間隔。
+	const Vector2 SPAWN_GRID_POSITION = Vector2(4.0f, 18.0f);		// テトリミノのスポーン位置。
+	constexpr float DELETE_TIME = 0.9f;					// テトリミノが最下部に到達してからフィールドに固定されるまでの時間。
+	constexpr float PIVOT_OFFSET = 0.5f;				// 半ブロックのサイズ。
+	constexpr float REPEAT_MOVE_START_DELAY = 0.3f;		// 移動のリピート開始までの遅延時間。
+	constexpr float REPEAT_MOVE_INTERVAL = 0.05f;		// 移動のリピート間隔。
+	constexpr int offsetPatternForRotateState = 8;		// SRSのオフセットパターン数。
+	constexpr int offsetCountPerPattern = 5;			// SRSの1パターンあたりのオフセット数。
 
 	/// <summary>
 	/// テトリミノのスプライトファイル名と相対座標の一覧。
@@ -17,7 +20,7 @@ namespace
 	Vector2 BlocksLocalPositionRatio[MINO_KINDS_COUNT][MINO_PARTS_COUNT] =
 	{
 		//	1ブロック目,	2ブロック目,	3ブロック目,	4ブロック目 
-			{{-1.5f,0.5f},	{-0.5f,0.5f},	{0.5f,0.5f},	{1.5f,0.5f}},	// I
+			{{-1.5f,0.5f},	{-0.5f,0.5f},	{0.5f,0.5f},	{1.5f,0.5f} },	// I
 			{{0,0},			{-1,1},			{-1,0},			{1,0}		},	// J
 			{{0,0},			{-1,0},			{1,0},			{1,1}		},	// L
 			{{-0.5f,0.5f},	{-0.5f,-0.5f},	{0.5f,0.5f},	{0.5f,-0.5f}},	// O
@@ -25,7 +28,86 @@ namespace
 			{{0,0},			{-1,0},			{0,1},			{1,0}		},	// T
 			{{0,0},			{-1,1},			{0,1},			{1,0}		}	// Z
 	};
-}
+
+	/// <summary> 
+	/// テトリミノの回転状態。
+	/// </summary>
+	enum class EnRotationDeg : uint8_t
+	{
+		enRotationDeg_0,
+		enRotationDeg_90,
+		enRotationDeg_180,
+		enRotationDeg_270,
+		enRotationDeg_Num
+	};
+
+	struct SRSOffsetInfo
+	{
+		int beforeState;							// 回転前の状態。
+		int currentState;							// 回転後の状態。
+		Vector2 Offset[offsetCountPerPattern];		// 1つ目のオフセット。
+	};
+
+	SRSOffsetInfo SRSOffsetTableForNormal[offsetPatternForRotateState] =
+	{
+		//	回転前の状態										回転後の状態
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_0),	static_cast<int>(EnRotationDeg::enRotationDeg_90),
+		//	1stオフセット,		 2ndオフセット,		  3rdオフセット,		4thオフセット,		 5thオフセット
+			{Vector2(0.0f,0.0f), Vector2(-1.0f,0.0f), Vector2(-1.0f,1.0f),  Vector2(0.0f,-2.0f), Vector2(-1.0f,-2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_90),	static_cast<int>(EnRotationDeg::enRotationDeg_0),
+			{Vector2(0.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(1.0f,-1.0f),  Vector2(0.0f,2.0f),  Vector2(1.0f,2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_90),	static_cast<int>(EnRotationDeg::enRotationDeg_180),
+			{Vector2(0.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(1.0f,-1.0f),  Vector2(0.0f,2.0f),  Vector2(1.0f,2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_180),	static_cast<int>(EnRotationDeg::enRotationDeg_90),
+			{Vector2(0.0f,0.0f), Vector2(-1.0f,0.0f), Vector2(-1.0f,1.0f),  Vector2(0.0f,-2.0f), Vector2(-1.0f,-2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_180),	static_cast<int>(EnRotationDeg::enRotationDeg_270),
+			{Vector2(0.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(1.0f,1.0f),   Vector2(0.0f,-2.0f), Vector2(1.0f,-2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_270),	static_cast<int>(EnRotationDeg::enRotationDeg_180),
+			{Vector2(0.0f,0.0f), Vector2(-1.0f,0.0f), Vector2(-1.0f,-1.0f), Vector2(0.0f,2.0f),  Vector2(-1.0f,2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_270),	static_cast<int>(EnRotationDeg::enRotationDeg_0),
+			{Vector2(0.0f,0.0f), Vector2(-1.0f,0.0f), Vector2(-1.0f,-1.0f), Vector2(0.0f,2.0f),  Vector2(-1.0f,2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_0),	static_cast<int>(EnRotationDeg::enRotationDeg_270),
+			{Vector2(0.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(1.0f,1.0f),   Vector2(0.0f,-2.0f), Vector2(1.0f,-2.0f)}}
+	};
+
+	SRSOffsetInfo SRSOffsetTableForI[offsetPatternForRotateState] =
+	{
+		//	回転前の状態										回転後の状態
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_0),	static_cast<int>(EnRotationDeg::enRotationDeg_90),
+		//	1stオフセット,		 2ndオフセット,		  3rdオフセット,	   4thオフセット,		 5thオフセット
+			{Vector2(0.0f,0.0f), Vector2(-2.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(-2.0f,-1.0f), Vector2(1.0f,2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_90),	static_cast<int>(EnRotationDeg::enRotationDeg_0),
+			{Vector2(0.0f,0.0f), Vector2(2.0f,0.0f),  Vector2(-1.0f,0.0f), Vector2(2.0f,1.0f),   Vector2(-1.0f,-2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_90),	static_cast<int>(EnRotationDeg::enRotationDeg_180),
+			{Vector2(0.0f,0.0f), Vector2(-1.0f,0.0f), Vector2(2.0f,0.0f),  Vector2(-1.0f,2.0f),  Vector2(2.0f,-1.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_180),	static_cast<int>(EnRotationDeg::enRotationDeg_90),
+			{Vector2(0.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(-2.0f,0.0f), Vector2(1.0f,-2.0f),  Vector2(-2.0f,1.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_180),	static_cast<int>(EnRotationDeg::enRotationDeg_270),
+			{Vector2(0.0f,0.0f), Vector2(2.0f,0.0f),  Vector2(-1.0f,0.0f), Vector2(2.0f,1.0f),   Vector2(-1.0f,-2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_270),	static_cast<int>(EnRotationDeg::enRotationDeg_180),
+			{Vector2(0.0f,0.0f), Vector2(-2.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(-2.0f,-1.0f), Vector2(1.0f,2.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_270),	static_cast<int>(EnRotationDeg::enRotationDeg_0),
+			{Vector2(0.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(-2.0f,0.0f), Vector2(1.0f,-2.0f),  Vector2(-2.0f,1.0f)}},
+
+		{	static_cast<int>(EnRotationDeg::enRotationDeg_0),	static_cast<int>(EnRotationDeg::enRotationDeg_270),
+			{Vector2(0.0f,0.0f), Vector2(-1.0f,0.0f), Vector2(2.0f,0.0f),  Vector2(-1.0f,2.0f),  Vector2(2.0f,-1.0f)}}
+	};
+};
+
+
 
 bool Tetrimino::Start()
 {
@@ -38,7 +120,7 @@ bool Tetrimino::Start()
 	srand(time(nullptr));
 
 	// 生成するテトリミノの種類を抽選。
-	m_selectedMinoKind = rand() % enMinoKinds_Num;
+	m_selectedMinoKind = rand() % static_cast<int>(EnMinoKinds::enMinoKinds_Num);
 
 	// テトリミノの画像を設定する。
 	SetupSpriteImage();
@@ -125,7 +207,8 @@ void Tetrimino::SetupPivotPosition()
 	m_minoPivotGridPosition = SPAWN_GRID_POSITION;
 
 	// I、Oのミノは基点を上に半ブロックずらす。
-	if (m_selectedMinoKind == enMinoKinds_I || m_selectedMinoKind == enMinoKinds_O)
+	if (m_selectedMinoKind == static_cast<int>(EnMinoKinds::enMinoKinds_I)
+		|| m_selectedMinoKind == static_cast<int>(EnMinoKinds::enMinoKinds_O))
 	{
 		m_minoPivotGridPosition.x += PIVOT_OFFSET;
 		m_minoPivotGridPosition.y += PIVOT_OFFSET;
@@ -142,7 +225,7 @@ void Tetrimino::SwitchRotationState()
 		// 回転状態を保存。
 		int beforeState = m_rotationState;
 		// 回転状態を更新。
-		m_rotationState = (m_rotationState + 1) % enRotationDeg_Num;
+		m_rotationState = (m_rotationState + 1) % static_cast<int>(EnRotationDeg::enRotationDeg_Num);
 		CalcLocalGridPositionsForRotationState();
 		CalcBlocksCurrentGlobalGridPositions();
 
@@ -156,7 +239,8 @@ void Tetrimino::SwitchRotationState()
 		// 回転状態を保存。
 		int beforeState = m_rotationState;
 		// 回転状態を更新。
-		m_rotationState = (m_rotationState + enRotationDeg_Num - 1) % enRotationDeg_Num;
+		m_rotationState = (m_rotationState + static_cast<int>(EnRotationDeg::enRotationDeg_Num) - 1)
+			% static_cast<int>(EnRotationDeg::enRotationDeg_Num);
 		CalcLocalGridPositionsForRotationState();
 		CalcBlocksCurrentGlobalGridPositions();
 
@@ -177,10 +261,10 @@ Vector2 Tetrimino::Rotate(Vector2 pos, int rotationState)
 {
 	switch (rotationState)
 	{
-	case enRotationDeg_0:   return pos;
-	case enRotationDeg_90:  return { pos.y, -pos.x };
-	case enRotationDeg_180: return { -pos.x, -pos.y };
-	case enRotationDeg_270: return { -pos.y, pos.x };
+	case static_cast<int>(EnRotationDeg::enRotationDeg_0):   return pos;
+	case static_cast<int>(EnRotationDeg::enRotationDeg_90):  return { pos.y, -pos.x };
+	case static_cast<int>(EnRotationDeg::enRotationDeg_180): return { -pos.x, -pos.y };
+	case static_cast<int>(EnRotationDeg::enRotationDeg_270): return { -pos.y, pos.x };
 	}
 	return pos;
 }
@@ -229,6 +313,7 @@ void Tetrimino::CalcBlocksCurrentGlobalPositions()
 void Tetrimino::MoveDown()
 {
 	m_minoPivotGridPosition.y--;
+	m_fallTimer = 0.0f;
 }
 
 /// <summary> 
@@ -307,7 +392,6 @@ void Tetrimino::AddGravity()
 	// 1秒経ったら1ブロック分落下する。
 	if (m_fallTimer > 1.0f) {
 		MoveDown();
-		m_fallTimer = 0.0f;
 	}
 
 	CalcBlocksCurrentGlobalGridPositions();
@@ -391,200 +475,25 @@ bool Tetrimino::IsBlockedBelow()
 /// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
 void Tetrimino::SuperRotationSystem(int beforeState, int currentState)
 {
-	if (m_selectedMinoKind == enMinoKinds_I) {
-		SuperRotationSystemVersionI(beforeState, currentState);
+	SRSOffsetInfo useOffsetPattern[offsetPatternForRotateState];
+
+	// Iミノとそれ以外でオフセットパターンが異なるため、場合分け。
+	if (m_selectedMinoKind == static_cast<int>(EnMinoKinds::enMinoKinds_I)) {
+		std::copy(std::begin(SRSOffsetTableForI), std::end(SRSOffsetTableForI), useOffsetPattern);
 	}
 	else {
-		SuperRotationSystemVersionNormal(beforeState, currentState);
+		std::copy(std::begin(SRSOffsetTableForNormal), std::end(SRSOffsetTableForNormal), useOffsetPattern);
 	}
-}
 
-/// <summary>
-/// Iのテトリミノの回転時に、SRSのキックテーブルに従って位置調整を行います。
-/// 回転後に位置調整ができない場合は、回転前の状態に戻します。
-/// </summary>
-/// <param name="beforeState">回転前のテトリミノの状態（角度）。</param>
-/// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
-void Tetrimino::SuperRotationSystemVersionI(int beforeState, int currentState)
-{
-	if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_90) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-2, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-2, -1)) { return; }
-		else if (SuperRotationSystemCheck(1, 2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_0) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(2, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(2, 1)) { return; }
-		else if (SuperRotationSystemCheck(-1, -2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_180) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(2, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 2)) { return; }
-		else if (SuperRotationSystemCheck(2, -1)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_90) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-2, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, -2)) { return; }
-		else if (SuperRotationSystemCheck(-2, 1)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_270) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(2, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(2, 1)) { return; }
-		else if (SuperRotationSystemCheck(-1, -2)) { return; }
-	}
-	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_180) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-2, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-2, -1)) { return; }
-		else if (SuperRotationSystemCheck(1, 2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_0) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-2, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, -2)) { return; }
-		else if (SuperRotationSystemCheck(-2, 1)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_270) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(2, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 2)) { return; }
-		else if (SuperRotationSystemCheck(2, -1)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-}
-
-/// <summary>
-/// I以外のテトリミノの回転時に、SRSのキックテーブルに従って位置調整を行います。
-/// 回転後に位置調整ができない場合は、回転前の状態に戻します。
-/// </summary>
-/// <param name="beforeState">回転前のテトリミノの状態（角度）。</param>
-/// <param name="currentState">回転後のテトリミノの状態（角度）。</param>
-void Tetrimino::SuperRotationSystemVersionNormal(int beforeState, int currentState)
-{
-	if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_90) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 1)) { return; }
-		else if (SuperRotationSystemCheck(0, -2)) { return; }
-		else if (SuperRotationSystemCheck(-1, -2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_180) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, -1)) { return; }
-		else if (SuperRotationSystemCheck(0, 2)) { return; }
-		else if (SuperRotationSystemCheck(1, 2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_270) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 1)) { return; }
-		else if (SuperRotationSystemCheck(0, -2)) { return; }
-		else if (SuperRotationSystemCheck(1, -2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_0) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, -1)) { return; }
-		else if (SuperRotationSystemCheck(0, 2)) { return; }
-		else if (SuperRotationSystemCheck(-1, +2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_0 && currentState == enRotationDeg_270) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 1)) { return; }
-		else if (SuperRotationSystemCheck(0, -2)) { return; }
-		else if (SuperRotationSystemCheck(1, -2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_270 && currentState == enRotationDeg_180) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, -1)) { return; }
-		else if (SuperRotationSystemCheck(0, 2)) { return; }
-		else if (SuperRotationSystemCheck(-1, 2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_180 && currentState == enRotationDeg_90) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 0)) { return; }
-		else if (SuperRotationSystemCheck(-1, 1)) { return; }
-		else if (SuperRotationSystemCheck(0, -2)) { return; }
-		else if (SuperRotationSystemCheck(-1, -2)) { return; }
-		else {
-			m_rotationState = beforeState;
-			return;
-		}
-	}
-	else if (beforeState == enRotationDeg_90 && currentState == enRotationDeg_0) {
-		if (SuperRotationSystemCheck(0, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, 0)) { return; }
-		else if (SuperRotationSystemCheck(1, -1)) { return; }
-		else if (SuperRotationSystemCheck(0, 2)) { return; }
-		else if (SuperRotationSystemCheck(1, 2)) { return; }
-		else {
+	// 回転前と回転後の状態に一致するオフセットパターンを探し、順にオフセットを試す。
+	for (int i = 0; i < offsetPatternForRotateState; i++) {
+		// 回転前と回転後の状態が一致するパターンを見つけたら処理に入る。。
+		if (beforeState == useOffsetPattern[i].beforeState && currentState == useOffsetPattern[i].currentState) {
+			// オフセットパターンを順に試し、配置できるかチェック。
+			for (int j = 0; j < offsetCountPerPattern; j++) {
+				if (SRS_Check(useOffsetPattern[i].Offset[j])) { return; }
+			}
+			// どのオフセットパターンでも配置できなかった場合、回転前の状態に戻す。
 			m_rotationState = beforeState;
 			return;
 		}
@@ -598,18 +507,18 @@ void Tetrimino::SuperRotationSystemVersionNormal(int beforeState, int currentSta
 /// <param name="offsetX"> X座標の補正値。</param>
 /// <param name="offsetY"> Y座標の補正値。</param>
 /// <returns> 補正後に配置できる場合はtrue、できない場合はfalseを返す。</returns>
-bool Tetrimino::SuperRotationSystemCheck(int offsetX, int offsetY)
+bool Tetrimino::SRS_Check(Vector2 offset)
 {
 	int OverlapCount = 0;
 	for (auto& blockPos : m_blocksCurrentGlobalGridPositions) {
 		// X座標がエリア外に出ている場合。
-		int x = blockPos.x + offsetX;
+		int x = blockPos.x + offset.x;
 		if (x < 0 || x >= PLAYABLE_WIDTH_IN_BLOCKS) {
 			OverlapCount++;
 			continue;
 		}
 		// Y座標がエリア外に出ている場合。
-		int y = blockPos.y + offsetY;
+		int y = blockPos.y + offset.y;
 		if (y < 0 || y >= PLAYABLE_HEIGHT_IN_BLOCKS) {
 			OverlapCount++;
 			continue;
@@ -621,8 +530,8 @@ bool Tetrimino::SuperRotationSystemCheck(int offsetX, int offsetY)
 	}
 	// 重なっていなければ補正を適用。
 	if (OverlapCount == 0) {
-		m_minoPivotGridPosition.x += offsetX;
-		m_minoPivotGridPosition.y += offsetY;
+		m_minoPivotGridPosition.x += offset.x;
+		m_minoPivotGridPosition.y += offset.y;
 		CalcBlocksCurrentGlobalGridPositions();
 		return true;
 	}
