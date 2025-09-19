@@ -15,10 +15,8 @@ enum class LineClearType
 class ScoreManager :public IGameObject
 {
 private:
-	// 同時消しのカウント。
-	int lineClearCounts[static_cast<int>(LineClearType::LineClearType_Num)];
-	// 合計スコア。
-	int m_totalScore = 0;
+	int lineClearCounts[static_cast<int>(LineClearType::LineClearType_Num)];	// 同時消しのカウント。
+	int m_totalScore = 0;	// 合計スコア。
 
 public:
 	/// <summary>
@@ -36,6 +34,9 @@ public:
 		return m_totalScore;
 	}
 
+	/// <summary>
+	/// 指定した同時消しのカウントを取得します。
+	/// </summary>
 	int GetLineClearCount(int type) const
 	{
 		return lineClearCounts[static_cast<int>(type)];

@@ -1,6 +1,9 @@
 #pragma once
 #include "stdafx.h"
 
+/// <summary>
+/// テキストの情報を保持する構造体です。
+/// </summary>
 struct ResultInfo
 {
 	std::string text;	// 文字列。（※半角のみ）

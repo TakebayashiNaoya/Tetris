@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Title.h"
 #include "Game.h"
+#include "TextTemplate.h"
 
 namespace
 {
@@ -10,11 +11,13 @@ namespace
 	constexpr float TITLE_LOGO_NORMAL_WIDTH = 240.0f;	// 通常のテトリミノの横幅。
 	constexpr float TITLE_LOGO_HEIGHT = 400.0f;			// テトリミノの縦幅。
 
-	const Vector3 POSITION_FOR_PRESS_A_START = { -430.0f, -200.0f, 0.0f };	// "Press Any Button"の位置。
-	constexpr float SCALE_FOR_PRESS_A_START = 2.0f;								// "Press Any Button"の大きさ。
-
 	const std::string TITLE_LOGO_FILE_PATH = "Assets/Sprite/Title/Title_";		// テトリミノのファイルパス。
 	const std::string EXTENSION_DDS = ".dds";									// スプライトの拡張子。
+
+	ResultInfo PRESS_A_START =
+	{
+		"Press A Start",	Vector3(-350.0f, -200.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White)
+	};
 
 	/// <summary>
 	/// タイトルロゴの情報を格納する構造体。
@@ -92,10 +95,12 @@ void Title::CreateTitleLogo()
 	}
 }
 
+/// <summary>
+/// 「PRESS A START」のテキストを作成します。
+/// </summary>
 void Title::CreatePressAtoStartText()
 {
-	m_pressAtoStartFontRender.SetText(L"Press A Start");
-	m_pressAtoStartFontRender.SetPosition(POSITION_FOR_PRESS_A_START);
-	m_pressAtoStartFontRender.SetScale(SCALE_FOR_PRESS_A_START);
-	m_pressAtoStartFontRender.SetColor(g_vec4White);
+	wchar_t wtext[128];
+	MultiByteToWideChar(CP_UTF8, 0, PRESS_A_START.text.c_str(), -1, wtext, 128);
+	SetTextOption(&m_pressAtoStartFontRender, PRESS_A_START, L"%s", wtext);
 }
