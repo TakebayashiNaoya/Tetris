@@ -6,13 +6,13 @@
 
 namespace
 {
-	const Vector2 SPAWN_GRID_POSITION = Vector2(4.0f, 18.0f);		// テトリミノのスポーン位置。
-	constexpr float DELETE_TIME = 0.9f;					// テトリミノが最下部に到達してからフィールドに固定されるまでの時間。
-	constexpr float PIVOT_OFFSET = 0.5f;				// 半ブロックのサイズ。
-	constexpr float REPEAT_MOVE_START_DELAY = 0.3f;		// 移動のリピート開始までの遅延時間。
-	constexpr float REPEAT_MOVE_INTERVAL = 0.05f;		// 移動のリピート間隔。
-	constexpr int offsetPatternForRotateState = 8;		// SRSのオフセットパターン数。
-	constexpr int offsetCountPerPattern = 5;			// SRSの1パターンあたりのオフセット数。
+	const Vector2 SPAWN_GRID_POSITION = Vector2(4.0f, 18.0f);	// テトリミノのスポーン位置。
+	constexpr float DELETE_TIME = 0.9f;							// テトリミノが最下部に到達してからフィールドに固定されるまでの時間。
+	constexpr float PIVOT_OFFSET = 0.5f;						// 半ブロックのサイズ。
+	constexpr float REPEAT_MOVE_START_DELAY = 0.3f;				// 移動のリピート開始までの遅延時間。
+	constexpr float REPEAT_MOVE_INTERVAL = 0.05f;				// 移動のリピート間隔。
+	constexpr int offsetPatternForRotateState = 8;				// SRSのオフセットパターン数。
+	constexpr int offsetCountPerPattern = 5;					// SRSの1パターンあたりのオフセット数。
 
 	/// <summary>
 	/// テトリミノのスプライトファイル名と相対座標の一覧。

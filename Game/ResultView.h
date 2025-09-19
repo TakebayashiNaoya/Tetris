@@ -14,16 +14,30 @@ private:
 	void Update()override final;
 	void Render(RenderContext& rc)override final;
 
-	void ViewResultText();		// 「RESULT」の表示。
-	void ViewLineClearScore();	// 各同時消しのスコア表示。
-	void ViewTotalScore();		// スコアの表示。
+	/// <summary>
+	/// 「RESULT」の表示。
+	/// </summary>
+	void ViewResultText();
 
+	/// <summary>
+	/// 各同時消しのスコア表示。
+	/// </summary>
+	void ViewLineClearScore();
+
+	/// <summary>
+	/// 合計スコアの表示。
+	/// </summary>
+	void ViewTotalScore();
+
+	/// <summary>
+	/// 「Press A to Title」の表示。
+	/// </summary>
 	void CreatePressAtoTitleText();
 
 	SpriteRender m_backSpriteRender;	// 結果表示用のスプライトレンダー。
 
-	FontRender m_resultFontRender;			// 結果表示用のフォントレンダー。
 	FontRender m_viewLineClearScore[static_cast<int>(LineClearType::LineClearType_Num)];	// スコア表示用のフォントレンダー。
+	FontRender m_resultFontRender;			// 結果表示用のフォントレンダー。
 	FontRender m_viewTotalScore;			// 合計スコア表示用のフォントレンダー。
 	FontRender m_pressAtoTitleFontRender;	// タイトルへ戻る案内用のフォントレンダー。
 
