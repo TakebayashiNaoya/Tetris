@@ -4,3 +4,6 @@
 #include "k2EnginePreCompile.h"
 using namespace nsK2EngineLow;
 using namespace nsK2Engine;
+
+/** 汎用的なインクルード */
+#include "Types.h"
