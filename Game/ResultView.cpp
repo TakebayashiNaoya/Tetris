@@ -17,7 +17,7 @@ namespace
 	/// </summary>
 	ResultInfo PRESS_A_START =
 	{
-		"Result:",	Vector3(-180.0f, 350.0f, 0.0f),		float(2.5f),	Vector4(g_vec4White)
+		"Result",	Vector3(-180.0f, 450.0f, 0.0f),		float(2.5f),	Vector4(g_vec4White)
 	};
 
 	/// <summary>
@@ -25,10 +25,16 @@ namespace
 	/// </summary>
 	ResultInfo SCORE_INFO[] =
 	{
-		"Single:",	Vector3(-230.0f,  200.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White),
-		"Double:",	Vector3(-230.0f,  100.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White),
-		"Triple:",	Vector3(-230.0f,  0.0f,	  0.0f),	float(2.0f),	Vector4(g_vec4White),
-		"Tetris:",	Vector3(-230.0f, -100.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White)
+		"Single:",	Vector3(-230.0f,  300.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White),
+		"Double:",	Vector3(-230.0f,  200.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White),
+		"Triple:",	Vector3(-230.0f,  100.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White),
+		"Tetris:",	Vector3(-230.0f,  0.0f,   0.0f),	float(2.0f),	Vector4(g_vec4White)
+	};
+
+
+	ResultInfo TOTAL_CLEAR_LINE_COUNT_INFO =
+	{
+		"ClearLine:",	Vector3(-360.0f, -100.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White)
 	};
 
 	/// <summary>
@@ -62,6 +68,7 @@ bool ResultView::Start()
 
 	ViewResultText();
 	ViewLineClearScore();
+	ViewLineClearTotalCount();
 	ViewTotalScore();
 	CreatePressAtoTitleText();
 
@@ -87,6 +94,8 @@ void ResultView::Render(RenderContext& rc)
 	{
 		m_viewLineClearScore[i].Draw(rc);
 	}
+
+	m_viewLineClearTotalCount.Draw(rc);
 
 	m_viewTotalScore.Draw(rc);
 
@@ -116,6 +125,13 @@ void ResultView::ViewLineClearScore()
 		MultiByteToWideChar(CP_UTF8, 0, SCORE_INFO[i].text.c_str(), -1, wtext, 128);
 		SetTextOption(&m_viewLineClearScore[i], SCORE_INFO[i], L"%s %d", wtext, m_scoreManager->GetLineClearCount(i));
 	}
+}
+
+void ResultView::ViewLineClearTotalCount()
+{
+	wchar_t wtext[128];
+	MultiByteToWideChar(CP_UTF8, 0, TOTAL_CLEAR_LINE_COUNT_INFO.text.c_str(), -1, wtext, 128);
+	SetTextOption(&m_viewLineClearTotalCount, TOTAL_CLEAR_LINE_COUNT_INFO, L"%s %d", wtext, m_scoreManager->GetLineClearTotalCount());
 }
 
 /// <summary>

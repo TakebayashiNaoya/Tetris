@@ -25,6 +25,11 @@ private:
 	void ViewLineClearScore();
 
 	/// <summary>
+	/// 全行クリアの合計回数を表示します。
+	/// </summary>
+	void ViewLineClearTotalCount();
+
+	/// <summary>
 	/// 合計スコアの表示。
 	/// </summary>
 	void ViewTotalScore();
@@ -38,6 +43,7 @@ private:
 
 	FontRender m_viewLineClearScore[static_cast<int>(LineClearType::LineClearType_Num)];	// スコア表示用のフォントレンダー。
 	FontRender m_resultFontRender;			// 結果表示用のフォントレンダー。
+	FontRender m_viewLineClearTotalCount;	// 総ライン数表示用のフォントレンダー。
 	FontRender m_viewTotalScore;			// 合計スコア表示用のフォントレンダー。
 	FontRender m_pressAtoTitleFontRender;	// タイトルへ戻る案内用のフォントレンダー。
 

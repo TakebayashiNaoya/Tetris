@@ -20,6 +20,8 @@
     <ClCompile Include="BackGround.cpp" />
     <ClCompile Include="ResultView.cpp" />
     <ClCompile Include="ScoreView.cpp" />
+    <ClCompile Include="NextTetriminoView.cpp" />
+    <ClCompile Include="PauseView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -36,5 +38,8 @@
     <ClInclude Include="ResultView.h" />
     <ClInclude Include="ScoreView.h" />
     <ClInclude Include="TextTemplate.h" />
+    <ClInclude Include="NextTetriminoView.h" />
+    <ClInclude Include="Types.h" />
+    <ClInclude Include="PauseView.h" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,9 @@
 #include <time.h>
 #include "FieldManager.h"
 #include <algorithm>
+#include "BlockSpriteList.h"
+#include "NextTetriminoView.h"
+#include "PauseView.h"
 
 namespace
 {
@@ -13,6 +16,9 @@ namespace
 	constexpr float REPEAT_MOVE_INTERVAL = 0.05f;				// 移動のリピート間隔。
 	constexpr int offsetPatternForRotateState = 8;				// SRSのオフセットパターン数。
 	constexpr int offsetCountPerPattern = 5;					// SRSの1パターンあたりのオフセット数。
+	constexpr float FALL_INTERVAL_BASE = 1.0f;					// 落下間隔の基準値。
+	constexpr float FALL_INTERVAL_DECREASE_PER_LEVEL = 0.1f;	// レベルが1上がるごとに落下間隔をどれだけ減らすか。
+	constexpr float FALL_INTERVAL_MIN = 0.1f;					// 落下間隔の最小値。
 
 	/// <summary>
 	/// テトリミノのスプライトファイル名と相対座標の一覧。
@@ -111,16 +117,20 @@ namespace
 
 bool Tetrimino::Start()
 {
-	// フィールドマネージャーを取得。
 	m_fieldManager = FindGO<FieldManager>("FieldManager");
-
 	m_blockSpriteList = FindGO<BlockSpriteList>("BlockSpriteList");
+	m_nextTetriminoView = FindGO<NextTetriminoView>("NextTetriminoView");
+	m_scoreManager = FindGO<ScoreManager>("ScoreManager");
+	m_pauseView = FindGO<PauseView>("PauseManager");
 
 	// テトリミノを完全ランダムにする処理。
 	srand(time(nullptr));
 
 	// 生成するテトリミノの種類を抽選。
-	m_selectedMinoKind = rand() % static_cast<int>(EnMinoKinds::enMinoKinds_Num);
+	m_selectedMinoKind = m_nextTetriminoView->GetNextMinoKind();
+
+	// 落下間隔をレベルに応じて設定。
+	CalcFallIntervalByLevel();
 
 	// テトリミノの画像を設定する。
 	SetupSpriteImage();
@@ -142,6 +152,13 @@ bool Tetrimino::Start()
 
 void Tetrimino::Update()
 {
+	// ポーズ中は処理をスキップ。
+	if (m_pauseView->GetIsPause()) {
+		return;
+	}
+
+	if (SaveToFieldManager()) { return; }
+
 	// 回転のステートを操作。
 	SwitchRotationState();
 
@@ -156,9 +173,6 @@ void Tetrimino::Update()
 
 	// 移動先位置をレンダーのポジションに設定。
 	SetupSpritePosition();
-
-	// 最後にフィールドに固定する。
-	SaveToFieldManager();
 }
 
 void Tetrimino::Render(RenderContext& rc)
@@ -335,13 +349,24 @@ void Tetrimino::MoveRight()
 }
 
 /// <summary>
-/// ボタン入力でテトリミノを左右下に動かす処理。
+/// ボタン入力でテトリミノの操作処理。
 /// </summary>
 void Tetrimino::HandleInputMovement()
 {
 	HandleDirectionalInput(enButtonLeft, IsBlockedLeft(), [&] { MoveLeft(); });
 	HandleDirectionalInput(enButtonRight, IsBlockedRight(), [&] { MoveRight(); });
+
+	// ソフトドロップ。
 	HandleDirectionalInput(enButtonDown, IsBlockedBelow(), [&] { MoveDown(); });
+
+	// ハードドロップ。
+	if (g_pad[0]->IsTrigger(enButtonUp)) {
+		while (!IsBlockedBelow()) {
+			MoveDown();
+			CalcBlocksCurrentGlobalGridPositions();
+		}
+		m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
+	}
 }
 
 /// <summary>
@@ -390,7 +415,7 @@ void Tetrimino::AddGravity()
 	m_fallTimer += g_gameTime->GetFrameDeltaTime();
 
 	// 1秒経ったら1ブロック分落下する。
-	if (m_fallTimer > 1.0f) {
+	if (m_fallTimer > m_fallInterval) {
 		MoveDown();
 	}
 
@@ -548,21 +573,46 @@ bool Tetrimino::SRS_Check(Vector2 offset)
 /// <summary>
 /// テトリミノが最下部に到達するか、他のテトリミノの上に乗ったら、フィールドマネージャーに保存。
 /// </summary> 
-void Tetrimino::SaveToFieldManager()
+bool Tetrimino::SaveToFieldManager()
 {
 	// 最下部に到達したか、他のテトリミノの上に乗ったかを判定。
 	if (IsBlockedBelow()) {
 		m_deleteTimer += g_gameTime->GetFrameDeltaTime();
-		if (g_pad[0]->IsPress(enButtonDown)) {
+		// ソフトドロップ中に下キーを押し続けている場合、フィールドに保存。
+		if (m_pressTimer > REPEAT_MOVE_START_DELAY) {
 			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
+			return true;
 		}
+		// 地面スレスレで下キーを押したら即座にフィールドに保存。
+		else if (g_pad[0]->IsTrigger(enButtonDown)) {
+			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
+			return true;
+		}
+		// 下が接触し、一定時間経過したらフィールドに保存。
 		else if (m_deleteTimer > DELETE_TIME) {
 			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
+			return true;
+		}
+		// 地面スレスレで動けるようにfalseを返す。
+		else {
+			return false;
 		}
 	}
 	// 下が着かなくなったらタイマーリセット。
 	else {
 		m_deleteTimer = 0.0f;
+		return false;
+	}
+}
+
+void Tetrimino::CalcFallIntervalByLevel()
+{
+	// レベルに応じて落下速度を計算。
+	m_fallInterval = FALL_INTERVAL_BASE - m_scoreManager->GetLevel() * FALL_INTERVAL_DECREASE_PER_LEVEL;
+
+	// 落下速度の下限を設定。
+	if (m_fallInterval < FALL_INTERVAL_MIN) {
+		m_fallInterval = FALL_INTERVAL_MIN;
 	}
 }
 

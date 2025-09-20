@@ -1,8 +1,10 @@
 #pragma once
-#include "BlockSpriteList.h"
 
 class FieldManager;
 class BlockSpriteList;
+class NextTetriminoView;
+class ScoreManager;
+class PauseView;
 
 namespace
 {
@@ -156,11 +158,13 @@ private:
 	/// <summary>
 	/// テトリミノが最下部に到達するか、他のテトリミノの上に乗ったら、フィールドマネージャーに保存。
 	/// </summary> 
-	void SaveToFieldManager();
+	bool SaveToFieldManager();
 
 
 
 	//=== その他 ===//
+	void CalcFallIntervalByLevel();
+
 	//template <typename TetriminoCheckFunc>
 	//void ForEachCheckFields(const TetriminoCheckFunc& func);
 	//void SetupBlockPresenceFlags();
@@ -169,6 +173,9 @@ private:
 
 	FieldManager* m_fieldManager;
 	BlockSpriteList* m_blockSpriteList;
+	NextTetriminoView* m_nextTetriminoView;
+	ScoreManager* m_scoreManager;
+	PauseView* m_pauseView;
 
 	std::array<SpriteRender*, MINO_PARTS_COUNT> m_blockSpriteRender;			// 各ブロックの画像
 
@@ -183,4 +190,5 @@ private:
 	float m_pressTimer = 0.0f;													// 自動落下までの長押しタイマー。
 	float m_moveIntervalTimer = 0.0f;											// 移動のインターバルタイマー。
 	float m_deleteTimer = 0.0f;													// テトリミノ削除タイマー。
+	float m_fallInterval = 0.0f;													// 落下速度。
 };
