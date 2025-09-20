@@ -228,6 +228,8 @@
     <ClCompile Include="FieldManager.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NextTetriminoView.cpp" />
+    <ClCompile Include="PauseView.cpp" />
     <ClCompile Include="ResultView.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="ScoreView.cpp" />
@@ -245,6 +247,8 @@
     <ClInclude Include="BlockSpriteList.h" />
     <ClInclude Include="FieldManager.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="NextTetriminoView.h" />
+    <ClInclude Include="PauseView.h" />
     <ClInclude Include="ResultView.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="ScoreView.h" />
@@ -253,6 +257,7 @@
     <ClInclude Include="Tetrimino.h" />
     <ClInclude Include="TextTemplate.h" />
     <ClInclude Include="Title.h" />
+    <ClInclude Include="Types.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

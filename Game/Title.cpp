@@ -11,8 +11,8 @@ namespace
 	constexpr float TITLE_LOGO_NORMAL_WIDTH = 240.0f;	// 通常のテトリミノの横幅。
 	constexpr float TITLE_LOGO_HEIGHT = 400.0f;			// テトリミノの縦幅。
 
-	const std::string TITLE_LOGO_FILE_PATH = "Assets/Sprite/Title/Title_";		// テトリミノのファイルパス。
-	const std::string EXTENSION_DDS = ".dds";									// スプライトの拡張子。
+	const std::string TITLE_LOGO_FILE_PATH = "Assets/Sprite/Title/Title_";	// テトリミノのファイルパス。
+	const std::string EXTENSION_DDS = ".dds";								// スプライトの拡張子。
 
 	ResultInfo PRESS_A_START =
 	{

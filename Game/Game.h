@@ -6,7 +6,9 @@ class BackGround;
 class FieldManager;
 class ScoreManager;
 class ScoreView;
+class NextTetriminoView;
 class ResultView;
+class PauseView;
 
 class Game : public IGameObject
 {
@@ -26,7 +28,9 @@ private:
 	FieldManager* m_fieldManager;
 	ScoreManager* m_scoreManager;
 	ScoreView* m_scoreView;
+	NextTetriminoView* m_nextTetriminoView;
 	ResultView* m_resultView;
+	PauseView* m_pauseView;
 
 	ModelRender m_modelRender;
 	Vector3 m_pos;
