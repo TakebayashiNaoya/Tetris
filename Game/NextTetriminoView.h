@@ -20,7 +20,6 @@ public:
 
 private:
 	bool Start()override final;
-	void Update()override final;
 	void Render(RenderContext& rc)override final;
 
 	/// <summary>
@@ -37,6 +36,8 @@ private:
 	/// 表示用の配列に必要に応じて控え配列から補充する。
 	/// </summary>
 	void RefillDisplayQueueIfNeeded();
+
+	void SetupFontRenderForNextText();
 
 	std::array<EnMinoKinds, NEXT_MINO_DISPLAY_COUNT> m_displayMinos;						// 次に生成されるテトリミノを表示する配列。
 	std::array<EnMinoKinds, static_cast<int>(EnMinoKinds::enMinoKinds_Num)> m_reserveMinos;	// 次に生成されるテトリミノを控える配列。
@@ -56,5 +57,6 @@ private:
 	};
 
 	SpriteRender m_nextMinoSpriteRender[NEXT_MINO_DISPLAY_COUNT];	// 次に生成されるテトリミノを表示するスプライトレンダー。
+	FontRender m_nextTextFontRender;
 };
 

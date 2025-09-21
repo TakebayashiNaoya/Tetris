@@ -14,6 +14,23 @@ namespace
 
 class Tetrimino :public IGameObject
 {
+public:
+	void Reset();
+
+	int GetMinoKind()const
+	{
+		return m_minoKind;
+	}
+
+	void SetMinoKind(int kind)
+	{
+		m_minoKind = kind;
+	}
+
+	Vector2 GetPivotGridPosition()const
+	{
+		return m_minoPivotGridPosition;
+	}
 private:
 	//=== ライフサイクル ===//
 	bool Start()override final;
@@ -185,7 +202,7 @@ private:
 
 	Vector2 m_minoPivotGridPosition = Vector2::Zero;							// テトリミノの回転基点グリッド座標を格納する変数。
 	int m_rotationState = 0;													// テトリミノの回転状態を格納する変数。
-	int m_selectedMinoKind = 0;													// 生成するテトリミノの種類を格納する変数。
+	int m_minoKind = 0;													// 生成するテトリミノの種類を格納する変数。
 	float m_fallTimer = 0.0f;													// タイマー。
 	float m_pressTimer = 0.0f;													// 自動落下までの長押しタイマー。
 	float m_moveIntervalTimer = 0.0f;											// 移動のインターバルタイマー。

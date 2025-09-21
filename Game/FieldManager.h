@@ -8,20 +8,12 @@
 class Game;
 class Tetrimino;
 class ScoreManager;
+class HoldView;
 
 namespace
 {
-	constexpr int PLAYABLE_WIDTH_IN_BLOCKS = 10;										// テトリミノを配置できる範囲（横のブロック数）
-	constexpr int PLAYABLE_HEIGHT_IN_BLOCKS = 20;										// テトリミノを配置できる範囲（縦のブロック数）
-
-	constexpr int STAGE_TOTAL_WIDTH_IN_BLOCKS = 12;										// 枠を含めた横のブロック数。
-	constexpr int STAGE_TOTAL_HEIGHT_IN_BLOCKS = 21;									// 枠を含めた縦のブロック数。
-
-	constexpr float STAGE_LEFT_OFFSET_X_FROM_CENTER = -4.5f;							// 中央からステージ左端までのブロック数。
-	const float STAGE_LEFT_X = STAGE_LEFT_OFFSET_X_FROM_CENTER * BLOCK_SIZE;		// ステージ左端のX座標。
-	constexpr float STAGE_BOTTOM_OFFSET_Y_FROM_CENTER = -9.0f;							// 中央からステージ下端までのブロック数。
-	const float STAGE_BOTTOM_Y = STAGE_BOTTOM_OFFSET_Y_FROM_CENTER * BLOCK_SIZE;	// ステージ下端のY座標。
-	const Vector2 STAGE_ORIGIN_POSITION = Vector2(STAGE_LEFT_X, STAGE_BOTTOM_Y);			// ステージの一番左下の座標。
+	constexpr int PLAYABLE_WIDTH_IN_BLOCKS = 10;	// テトリミノを配置できる範囲（横のブロック数）
+	constexpr int PLAYABLE_HEIGHT_IN_BLOCKS = 20;	// テトリミノを配置できる範囲（縦のブロック数）
 }
 
 class FieldManager : public IGameObject
@@ -37,6 +29,9 @@ public:
 		bool isThereBlock = false;				// ブロックの有無。
 	};
 
+	/// <summary>
+	/// コンストラクタ。
+	/// </summary>
 	FieldManager();
 
 	/// <summary>
@@ -59,6 +54,24 @@ public:
 	bool GetCheckFieldFlag(int grid_x, int grid_y)
 	{
 		return checkFields[grid_x][grid_y].isThereBlock;
+	}
+
+	/// <summary>
+	/// テトリミノが保持されているかどうかを判定します。
+	/// </summary>
+	/// <returns>テトリミノが保持されていれば true、そうでなければ false を返します。</returns>
+	bool GetIsHolded() const
+	{
+		return m_isHolded;
+	}
+
+	/// <summary>
+	/// 保持されているミノの種類を取得します。
+	/// </summary>
+	/// <returns>保持されているミノの種類を表す整数値。</returns>
+	int GetHoldedMinoKind() const
+	{
+		return m_holdedMinoKind;
 	}
 
 	/// <summary>
@@ -91,12 +104,51 @@ private:
 	void CheckFullLines();
 
 	/// <summary>
+	/// ラインを消しし、消されたライン数を計算します。
+	/// </summary>
+	/// <returns>消されたライン数。</returns>
+	int LinesClearAndCalcClearedLineCount();
+
+	/// <summary>
+	/// 1ラインでも消されていれば、コンボ数を更新します。
+	/// </summary>
+	/// <param name="clearLineCount">消されたライン数。</param>
+	void UpdateComboCount(int numClearedLines);
+
+	/// <summary>
 	/// 指定されたラインを消します。
 	/// </summary>
 	/// <param name="lineY">消すラインのY座標。</param>
 	void ClearFullLine(int lineY);
 
-	void PlaySoundOnLineClear(int clearLineCount);
+	/// <summary>
+	/// 指定されたY座標を基準に上から下にラインをシフトします。
+	/// </summary>
+	/// <param name="posYForFullLine">消されるラインのY座標。シフトの開始位置を指定します。</param>
+	void ShiftLines(int posYForFullLine);
+
+	/// <summary>
+	/// ライン消去時にサウンドを再生します。
+	/// </summary>
+	/// <param name="clearLineCount">消去されたラインの数。</param>
+	void PlaySoundOnLineClear(int numClearedLines);
+
+	/// <summary>
+	/// 指定されたミノの種類をホールドします。
+	/// </summary>
+	/// <param name="minoKind">ホールドするミノの種類を表す整数値。</param>
+	void HoldMino();
+
+	/// <summary>
+	/// 保持中のミノを入れ替えます。
+	/// </summary>
+	void SwapHoldedMino();
+
+	/// <summary>
+	/// Tスピンかどうかを判定します。
+	/// </summary>
+	/// <returns>Tスピンの場合は true、そうでない場合は false を返します。</returns>
+	bool CheckIsTSpin();
 
 	/// <summary>
 	/// フィールド上に空ブロックを配置し、各ブロックのスプライトを配置・更新します。
@@ -109,5 +161,11 @@ private:
 	Game* m_game;
 	Tetrimino* m_tetrimino;
 	ScoreManager* m_scoreManager;
+	HoldView* m_holdView;
+
+	int m_holdedMinoKind = 0;
+	bool m_isHolded = false;
+	int m_comboCount = 0;
+	bool m_isAllowedToHold = true;
 };
 

@@ -4,6 +4,15 @@
     <Filter Include="system">
       <UniqueIdentifier>{22dd8095-74f9-46df-81a1-36675a040b1f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{ddce9517-0eef-473a-861e-6011138b7f8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Template">
+      <UniqueIdentifier>{60d28bfd-34ee-4ce1-aa08-2deb9f834936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{f7e39d96-ff77-4d92-a99e-cfce3a669459}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp" />
@@ -12,17 +21,30 @@
       <Filter>system</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="FieldManager.cpp" />
     <ClCompile Include="Tetrimino.cpp" />
     <ClCompile Include="BlockSpriteList.cpp" />
-    <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="Title.cpp" />
     <ClCompile Include="BackGround.cpp" />
     <ClCompile Include="ResultView.cpp" />
-    <ClCompile Include="ScoreView.cpp" />
-    <ClCompile Include="NextTetriminoView.cpp" />
     <ClCompile Include="PauseView.cpp" />
-    <ClCompile Include="SoundManager.cpp" />
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="ScoreManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="NextTetriminoView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="ScoreView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="HoldView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -30,18 +52,35 @@
       <Filter>system</Filter>
     </ClInclude>
     <ClInclude Include="Game.h" />
-    <ClInclude Include="FieldManager.h" />
     <ClInclude Include="Tetrimino.h" />
     <ClInclude Include="BlockSpriteList.h" />
-    <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="Title.h" />
     <ClInclude Include="BackGround.h" />
     <ClInclude Include="ResultView.h" />
-    <ClInclude Include="ScoreView.h" />
-    <ClInclude Include="TextTemplate.h" />
-    <ClInclude Include="NextTetriminoView.h" />
-    <ClInclude Include="Types.h" />
     <ClInclude Include="PauseView.h" />
-    <ClInclude Include="SoundManager.h" />
+    <ClInclude Include="SoundManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="ScoreManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="FieldManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Template</Filter>
+    </ClInclude>
+    <ClInclude Include="TextTemplate.h">
+      <Filter>Template</Filter>
+    </ClInclude>
+    <ClInclude Include="NextTetriminoView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="ScoreView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="HoldView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
