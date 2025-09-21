@@ -27,7 +27,7 @@ namespace
 	Vector2 BlocksLocalPositionRatio[MINO_KINDS_COUNT][MINO_PARTS_COUNT] =
 	{
 		//	1ブロック目,			2ブロック目,			3ブロック目,			4ブロック目 
-			{Vector2(-1.5f,0.5f),	Vector2(-0.5f, 0.5f),	Vector2(0.5f, 0.5f),	Vector2(1.5f,0.5f)},	// I
+			{Vector2(-1.5f,-0.5f),	Vector2(-0.5f, -0.5f),	Vector2(0.5f, -0.5f),	Vector2(1.5f,-0.5f)},	// I
 			{Vector2(0.0f,0.0f),	Vector2(-1.0f, 1.0f),	Vector2(-1.0f,0.0f),	Vector2(1.0f,0.0f)},	// J
 			{Vector2(0.0f,0.0f),	Vector2(-1.0f, 0.0f),	Vector2(1.0f, 0.0f),	Vector2(1.0f,1.0f)},	// L
 			{Vector2(-0.5f,0.5f),	Vector2(-0.5f,-0.5f),	Vector2(0.5f, 0.5f),	Vector2(0.5f,-0.5f)},	// O
@@ -114,7 +114,29 @@ namespace
 	};
 };
 
+void Tetrimino::Reset()
+{
+	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
+		delete m_blockSpriteRender[i];
+		m_blockSpriteRender[i] = nullptr;
+	}
 
+	// テトリミノの画像を設定する。
+	SetupSpriteImage();
+
+	// テトリミノの回転基点位置を設定。
+	SetupPivotPosition();
+
+	m_rotationState = static_cast<int>(EnRotationDeg::enRotationDeg_0);
+	// 回転のステートに応じてブロックの移動先位置を計算。
+	CalcLocalGridPositionsForRotationState();
+
+	// 各ブロックのグローバルグリッド座標を算出。
+	CalcBlocksCurrentGlobalGridPositions();
+
+	// 各ブロックのワールド座標を算出。
+	CalcBlocksCurrentGlobalPositions();
+}
 
 bool Tetrimino::Start()
 {
@@ -128,7 +150,7 @@ bool Tetrimino::Start()
 	srand(time(nullptr));
 
 	// 生成するテトリミノの種類を抽選。
-	m_selectedMinoKind = m_nextTetriminoView->GetNextMinoKind();
+	m_minoKind = m_nextTetriminoView->GetNextMinoKind();
 
 	// 落下間隔をレベルに応じて設定。
 	CalcFallIntervalByLevel();
@@ -194,7 +216,7 @@ void Tetrimino::Render(RenderContext& rc)
 void Tetrimino::SetupSpriteImage()
 {
 	for (auto it = m_blockSpriteRender.begin(); it != m_blockSpriteRender.end(); ++it) {
-		*it = BlockCreateFactory::Create(m_selectedMinoKind);
+		*it = BlockCreateFactory::Create(m_minoKind);
 	}
 }
 
@@ -222,8 +244,8 @@ void Tetrimino::SetupPivotPosition()
 	m_minoPivotGridPosition = SPAWN_GRID_POSITION;
 
 	// I、Oのミノは基点を上に半ブロックずらす。
-	if (m_selectedMinoKind == static_cast<int>(EnMinoKinds::enMinoKinds_I)
-		|| m_selectedMinoKind == static_cast<int>(EnMinoKinds::enMinoKinds_O))
+	if (m_minoKind == static_cast<int>(EnMinoKinds::enMinoKinds_I)
+		|| m_minoKind == static_cast<int>(EnMinoKinds::enMinoKinds_O))
 	{
 		m_minoPivotGridPosition.x += PIVOT_OFFSET;
 		m_minoPivotGridPosition.y += PIVOT_OFFSET;
@@ -290,7 +312,7 @@ Vector2 Tetrimino::Rotate(Vector2 pos, int rotationState)
 void Tetrimino::CalcLocalGridPositionsForRotationState()
 {
 	for (int i = 0; i < MINO_PARTS_COUNT; ++i) {
-		m_blocksCurrentLocalGridPositions[i] = Rotate(BlocksLocalPositionRatio[m_selectedMinoKind][i], m_rotationState);
+		m_blocksCurrentLocalGridPositions[i] = Rotate(BlocksLocalPositionRatio[m_minoKind][i], m_rotationState);
 	}
 }
 
@@ -508,7 +530,7 @@ void Tetrimino::SuperRotationSystem(int beforeState, int currentState)
 	SRSOffsetInfo useOffsetPattern[offsetPatternForRotateState];
 
 	// Iミノとそれ以外でオフセットパターンが異なるため、場合分け。
-	if (m_selectedMinoKind == static_cast<int>(EnMinoKinds::enMinoKinds_I)) {
+	if (m_minoKind == static_cast<int>(EnMinoKinds::enMinoKinds_I)) {
 		std::copy(std::begin(SRSOffsetTableForI), std::end(SRSOffsetTableForI), useOffsetPattern);
 	}
 	else {

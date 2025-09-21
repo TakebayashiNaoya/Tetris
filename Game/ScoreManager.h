@@ -15,30 +15,35 @@ enum class LineClearType
 class ScoreManager :public IGameObject
 {
 private:
-	int m_lineSimultaneouslyClearCounts[static_cast<int>(LineClearType::LineClearType_Num)];	// 同時消しのカウント。
+	int m_lineClearTypeCounts[static_cast<int>(LineClearType::LineClearType_Num)];	// 同時消しのカウント。
 	int m_lineClearTotalCounts = 0;	// 総消去ライン数。
 	int m_totalScore = 0;			// 合計スコア。
 	int m_currentLevel = 0;			// 現在のレベル。
 	int m_beforeLevel = 0;			// 前のレベル。
+	int m_maxCombos = 0;			// 最大コンボ数。
 
 	bool Start()override final;
 
 	/// <summary>
 	/// レベルを更新します。
 	/// </summary>
-	void UpdateLevel();
+	void RecalculateLevel();
 
 	/// <summary>
 	/// レベルアップ時にサウンドを再生します。
 	/// </summary>
 	void PlaySoundForLevelUp();
 
+	void AddTotalScore(bool isTSpin, int clearLineCount, int comboCount);
+
+	int CalcComboScore(int comboCount);
+
 public:
 	/// <summary>
 	/// 消した列の数に応じてスコアに加算します。
 	/// </summary>
 	/// <param name="clearLineCount">消した列の数。</param>
-	void AddScore(int clearLineCount);
+	void AddScore(bool isTSpin, int clearLineCount, int comboCount);
 
 	/// <summary>
 	/// 現在のスコアを取得します。
@@ -54,7 +59,7 @@ public:
 	/// </summary>
 	int GetLineClearCount(int type) const
 	{
-		return m_lineSimultaneouslyClearCounts[static_cast<int>(type)];
+		return m_lineClearTypeCounts[static_cast<int>(type)];
 	}
 
 	/// <summary>

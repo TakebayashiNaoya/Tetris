@@ -227,6 +227,7 @@
     <ClCompile Include="BlockSpriteList.cpp" />
     <ClCompile Include="FieldManager.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="HoldView.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NextTetriminoView.cpp" />
     <ClCompile Include="PauseView.cpp" />
@@ -248,6 +249,7 @@
     <ClInclude Include="BlockSpriteList.h" />
     <ClInclude Include="FieldManager.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="HoldView.h" />
     <ClInclude Include="NextTetriminoView.h" />
     <ClInclude Include="PauseView.h" />
     <ClInclude Include="ResultView.h" />

@@ -42,6 +42,9 @@
     <ClCompile Include="ScoreView.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="HoldView.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -74,6 +77,9 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="ScoreView.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="HoldView.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>

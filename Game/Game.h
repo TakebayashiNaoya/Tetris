@@ -9,6 +9,7 @@ class ScoreView;
 class NextTetriminoView;
 class ResultView;
 class PauseView;
+class HoldView;
 
 class Game : public IGameObject
 {
@@ -31,6 +32,7 @@ private:
 	NextTetriminoView* m_nextTetriminoView;
 	ResultView* m_resultView;
 	PauseView* m_pauseView;
+	HoldView* m_holdView;
 
 	ModelRender m_modelRender;
 	Vector3 m_pos;
