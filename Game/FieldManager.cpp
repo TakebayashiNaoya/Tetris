@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "FieldManager.h"
 #include "Tetrimino.h"
+#include "SoundManager.h"
 
 FieldManager::FieldManager()
 {
@@ -88,6 +89,11 @@ void FieldManager::CheckFullLines()
 			y--; // ラインを消した分、yを1つ戻す。
 		}
 	}
+	// ラインを消した数に応じて、効果音を鳴らす。
+	if (clearLineCount > 0) {
+		PlaySoundOnLineClear(clearLineCount);
+	}
+	// スコアを加算。
 	m_scoreManager->AddScore(clearLineCount);
 }
 
@@ -123,6 +129,27 @@ void FieldManager::ClearFullLine(int lineY)
 	}
 }
 
+void FieldManager::PlaySoundOnLineClear(int clearLineCount)
+{
+	SoundManager* sound = FindGO<SoundManager>("SoundManager");
+	switch (clearLineCount) {
+	case 1:
+		sound->SoundNewGO(enSoundList_SingleSE);
+		break;
+	case 2:
+		sound->SoundNewGO(enSoundList_DoubleSE);
+		break;
+	case 3:
+		sound->SoundNewGO(enSoundList_TripleSE);
+		break;
+	case 4:
+		sound->SoundNewGO(enSoundList_TetrisSE);
+		break;
+	default:
+		break;
+	}
+}
+
 /// <summary>
 /// フィールド上にテトリミノのブロックを保存し、各ブロックのスプライトを配置・更新します。
 /// </summary>
@@ -150,6 +177,10 @@ void FieldManager::SaveTetrimino(const std::array<Vector2, MINO_PARTS_COUNT>& gr
 		checkField.spriteRender->SetPosition({ checkField.position.x, checkField.position.y, 0.0f });
 		checkField.spriteRender->Update();
 	}
+
+	SoundManager* sound = FindGO<SoundManager>("SoundManager");
+	sound->SoundNewGO(enSoundList_SaveMinoSE);
+
 	CheckFullLines();
 	DeleteGO(m_tetrimino);
 	m_tetrimino = NewGO<Tetrimino>(0, "Tetrimino");

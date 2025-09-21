@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ScoreManager.h"
+#include "SoundManager.h"
 
 namespace
 {
@@ -10,6 +11,7 @@ namespace
 
 bool ScoreManager::Start()
 {
+	m_beforeLevel = FIRST_LEVEL;
 	m_currentLevel = FIRST_LEVEL;
 	return true;
 }
@@ -20,6 +22,21 @@ bool ScoreManager::Start()
 void ScoreManager::UpdateLevel()
 {
 	m_currentLevel = (m_lineClearTotalCounts / LEVEL_UP_LINE_COUNT) + FIRST_LEVEL;
+
+	PlaySoundForLevelUp();
+}
+
+/// <summary>
+/// レベルアップ時に効果音を再生します。
+/// </summary>
+void ScoreManager::PlaySoundForLevelUp()
+{
+	if (m_currentLevel > m_beforeLevel) {
+		// レベルアップした場合の処理。
+		SoundManager* sound = FindGO<SoundManager>("SoundManager");
+		sound->SoundNewGO(enSoundList_LevelUpSE);
+		m_beforeLevel = m_currentLevel;
+	}
 }
 
 /// <summary>

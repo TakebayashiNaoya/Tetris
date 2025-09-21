@@ -22,6 +22,7 @@
     <ClCompile Include="ScoreView.cpp" />
     <ClCompile Include="NextTetriminoView.cpp" />
     <ClCompile Include="PauseView.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -41,5 +42,6 @@
     <ClInclude Include="NextTetriminoView.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="PauseView.h" />
+    <ClInclude Include="SoundManager.h" />
   </ItemGroup>
 </Project>

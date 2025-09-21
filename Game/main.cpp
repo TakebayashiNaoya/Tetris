@@ -6,6 +6,7 @@
 
 #include "Title.h"
 #include "BlockSpriteList.h"
+#include "SoundManager.h"
 
 
 
@@ -33,6 +34,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	//////////////////////////////////////
 	// ここから初期化を行うコードを記述する。
 	//////////////////////////////////////
+	NewGO<SoundManager>(0, "SoundManager");
 
 	NewGO<BlockSpriteList>(0, "BlockSpriteList");
 

@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Title.h"
 #include "TextTemplate.h"
+#include "SoundManager.h"
 
 namespace
 {
@@ -61,6 +62,9 @@ ResultView::~ResultView()
 
 bool ResultView::Start()
 {
+	SoundManager* sound = FindGO<SoundManager>("SoundManager");
+	sound->SoundNewGO(enSoundList_ResultSE);
+
 	m_game = FindGO<Game>("Game");
 	m_scoreManager = FindGO<ScoreManager>("ScoreManager");
 
@@ -79,6 +83,8 @@ void ResultView::Update()
 {
 	if (g_pad[0]->IsTrigger(enButtonA))
 	{
+		SoundManager* sound = FindGO<SoundManager>("SoundManager");
+		sound->SoundNewGO(enSoundList_SelectSE);
 		DeleteGO(this);
 		DeleteGO(m_game);
 	}
