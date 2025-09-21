@@ -19,11 +19,17 @@ namespace
 		"SCORE:",	Vector3(-200.0f, 500.0f, 0.0f),	float(1.5f),	Vector4(g_vec4White)
 	};
 
+	/// <summary>
+	/// 「LEVEL」の表示設定情報。
+	/// </summary>
 	ResultInfo CURRENT_LEVEL_INFO =
 	{
 		"LEVEL:",	Vector3(-450.0f, 200.0f, 0.0f),	float(1.5f),	Vector4(g_vec4White)
 	};
 
+	/// <summary>
+	/// 「LINE」の表示設定情報。
+	/// </summary>
 	ResultInfo LINE_CLEAR_TOTAL_COUNT_INFO =
 	{
 		"LINE:",	Vector3(-450.0f, 0.0f, 0.0f),	float(1.5f),	Vector4(g_vec4White)
@@ -52,6 +58,9 @@ void ScoreView::Render(RenderContext& rc)
 	m_viewLine.Draw(rc);
 }
 
+/// <summary>
+/// 現在の合計スコアを表示します。
+/// </summary>
 void ScoreView::ViewCurrentTotalScore()
 {
 	wchar_t wtext[128];
@@ -59,6 +68,9 @@ void ScoreView::ViewCurrentTotalScore()
 	SetTextOption(&m_viewScore, CURRENT_SCORE_INFO, L"%s %d", wtext, m_scoreManager->GetScore());
 }
 
+/// <summary>
+/// 現在のレベルを表示します。
+/// </summary>
 void ScoreView::ViewCurrentLevel()
 {
 	wchar_t wtext[128];
@@ -66,6 +78,9 @@ void ScoreView::ViewCurrentLevel()
 	SetTextOption(&m_viewLevel, CURRENT_LEVEL_INFO, L"%s\n%d", wtext, m_scoreManager->GetLevel());
 }
 
+/// <summary>
+/// 合計ラインクリア数を表示します。
+/// </summary>
 void ScoreView::ViewLineClearTotalCount()
 {
 	wchar_t wtext[128];

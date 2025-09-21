@@ -23,6 +23,9 @@ namespace
 		return HOLD_VIEW_FILE_PATH + fileName[num] + EXTENSION_DDS;
 	}
 
+	/// <summary>
+	/// 「HOLD」と表示するための情報。
+	/// </summary>
 	ResultInfo HOLD =
 	{
 		"HOLD",	Vector3(-420.0f, 480.0f, 0.0f),		float(1.5f),	Vector4(g_vec4White)
@@ -40,10 +43,6 @@ bool HoldView::Start()
 	return true;
 }
 
-void HoldView::Update()
-{
-}
-
 void HoldView::Render(RenderContext& renderContext)
 {
 	m_holdTextFontRender.Draw(renderContext);
@@ -52,6 +51,9 @@ void HoldView::Render(RenderContext& renderContext)
 	}
 }
 
+/// <summary>
+/// ホールドされたミノの種類に応じて画像を更新します。
+/// </summary>
 void HoldView::UpdateHoldView()
 {
 	int holdedMinoKind = m_fieldManager->GetHoldedMinoKind();

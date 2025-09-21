@@ -288,7 +288,7 @@ void FieldManager::SwapHoldedMino()
 {
 	int activeMinoKind = m_tetrimino->GetMinoKind();
 	m_tetrimino->SetMinoKind(m_holdedMinoKind);
-	m_tetrimino->Reset();
+	m_tetrimino->ResetForHold();
 	m_holdedMinoKind = activeMinoKind;
 }
 

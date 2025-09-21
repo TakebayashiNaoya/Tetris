@@ -2,13 +2,12 @@
 
 namespace
 {
-	constexpr int CHARACTER_COUNT_OF_TETRIS = 6;
+	constexpr int CHARACTER_COUNT_OF_TETRIS = 6;	// "TETRIS"の文字数。
 }
 
 class Title :public IGameObject
 {
 public:
-	Title();
 	~Title();
 
 private:
@@ -21,11 +20,13 @@ private:
 	/// </summary>
 	void CreateTitleLogo();
 
+	/// <summary>
+	/// 「PRESS A START」のテキストを作成します。
+	/// </summary>
 	void CreatePressAtoStartText();
 
-	SpriteRender m_titleSpriteRender;
-	SpriteRender m_titleLogoSpriteRender[CHARACTER_COUNT_OF_TETRIS];
-
-	FontRender m_pressAtoStartFontRender;
+	SpriteRender m_titleSpriteRender;									// タイトル背景用のスプライトレンダー。
+	SpriteRender m_titleLogoSpriteRender[CHARACTER_COUNT_OF_TETRIS];	// タイトルロゴ用のスプライトレンダー。
+	FontRender m_pressAtoStartFontRender;								// 「PRESS A START」用のフォントレンダー。
 };
 

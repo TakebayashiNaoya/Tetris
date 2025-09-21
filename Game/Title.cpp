@@ -15,6 +15,8 @@ namespace
 	const std::string TITLE_LOGO_FILE_PATH = "Assets/Sprite/Title/Title_";	// テトリミノのファイルパス。
 	const std::string EXTENSION_DDS = ".dds";								// スプライトの拡張子。
 
+	/// <summary>
+	/// 「PRESS A START」の表示設定情報。
 	ResultInfo PRESS_A_START =
 	{
 		"Press A Start",	Vector3(-350.0f, -200.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White)
@@ -50,11 +52,6 @@ namespace
 		{std::string("I"),			Vector2(400.0f,	100.0f)},
 		{std::string("S"),			Vector2(600.0f,	100.0f)},
 	};
-
-}
-
-Title::Title()
-{
 
 }
 

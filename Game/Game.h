@@ -14,13 +14,12 @@ class HoldView;
 class Game : public IGameObject
 {
 public:
-	Game() {}
 	~Game();
 	bool Start();
 	void Update();
 
 	/// <summary>
-	/// ゲームオーバー状態を処理します。
+	/// ゲームオーバー時に関連するゲームオブジェクトを削除し、結果表示ビューを生成します。
 	/// </summary>
 	void OnGameOver();
 
@@ -33,8 +32,5 @@ private:
 	ResultView* m_resultView;
 	PauseView* m_pauseView;
 	HoldView* m_holdView;
-
-	ModelRender m_modelRender;
-	Vector3 m_pos;
 };
 
