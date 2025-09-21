@@ -26,6 +26,7 @@ bool Game::Start()
 	m_fieldManager = NewGO<FieldManager>(0, "FieldManager");
 	m_nextTetriminoView = NewGO<NextTetriminoView>(0, "NextTetriminoView");
 	m_pauseView = NewGO<PauseView>(0, "PauseManager");
+	m_tetriminoHolder = NewGO<TetriminoHolder>(0, "TetriminoHolder");
 
 	SoundManager* soundManager = FindGO<SoundManager>("SoundManager");
 	soundManager->SoundNewGO(enSoundList_InGameBGM);
