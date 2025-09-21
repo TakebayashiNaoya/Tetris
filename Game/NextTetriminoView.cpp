@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "NextTetriminoView.h"
 #include <time.h>
+#include "TextTemplate.h"
 
 namespace
 {
@@ -24,17 +25,30 @@ namespace
 	{
 		return TITLE_LOGO_FILE_PATH + fileName[num] + EXTENSION_DDS;
 	}
+
+	/// <summary>
+	/// 「NEXT」と表示するための情報。
+	/// </summary>
+	ResultInfo NEXT_FONT_INFO =
+	{
+		"NEXT",	Vector3(330.0f, 480.0f, 0.0f),		float(1.5f),	Vector4(g_vec4White)
+	};
 }
 
+/// <summary>
+/// 次に生成されるテトリミノの種類を取得します。
+/// </summary>
+/// <returns>次に生成されるテトリミノの種類を表す整数値。</returns>
 int NextTetriminoView::GetNextMinoKind()
 {
+	// 次に生成されるテトリミノの種類を取得。
 	int nextMino = static_cast<int>(m_displayMinos.front());
 
-
+	// 表示用配列を必要に応じて補充。
 	RefillDisplayQueueIfNeeded();
 
+	// スプライトの更新。
 	for (int i = 0; i < NEXT_MINO_DISPLAY_COUNT; i++) {
-		// スプライトの初期化。
 		m_nextMinoSpriteRender[i].Init(GetFullPath(static_cast<int>(m_displayMinos[i])).c_str(), NEXT_MINO_VIEW_SCALE, NEXT_MINO_VIEW_SCALE);
 		m_nextMinoSpriteRender[i].Update();
 	}
@@ -44,6 +58,9 @@ int NextTetriminoView::GetNextMinoKind()
 
 bool NextTetriminoView::Start()
 {
+	// 「NEXT」と表示するためのフォントレンダーを設定する。
+	SetupFontRenderForNextText();
+
 	// テトリミノを完全ランダムにする処理。
 	srand(time(nullptr));
 
@@ -53,12 +70,10 @@ bool NextTetriminoView::Start()
 	return true;
 }
 
-void NextTetriminoView::Update()
-{
-}
-
 void NextTetriminoView::Render(RenderContext& rc)
 {
+	m_nextTextFontRender.Draw(rc);
+
 	for (auto& sprite : m_nextMinoSpriteRender) {
 		sprite.Draw(rc);
 	}
@@ -126,4 +141,14 @@ void NextTetriminoView::RefillDisplayQueueIfNeeded()
 		m_reserveMinos[i] = m_reserveMinos[i + 1];
 		m_reserveMinos[i + 1] = EnMinoKinds::enMinoKinds_Num;
 	}
+}
+
+/// <summary>
+/// 「NEXT」と表示するためのフォントレンダーを設定する。
+/// </summary>
+void NextTetriminoView::SetupFontRenderForNextText()
+{
+	wchar_t wtext[128];
+	MultiByteToWideChar(CP_UTF8, 0, NEXT_FONT_INFO.text.c_str(), -1, wtext, 128);
+	SetTextOption(&m_nextTextFontRender, NEXT_FONT_INFO, L"%s", wtext);
 }
