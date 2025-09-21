@@ -32,7 +32,9 @@ namespace
 		"Tetris:",	Vector3(-230.0f,  0.0f,   0.0f),	float(2.0f),	Vector4(g_vec4White)
 	};
 
-
+	/// <summary>
+	/// 消したライン数のスコア表示設定情報。
+	/// </summary>
 	ResultInfo TOTAL_CLEAR_LINE_COUNT_INFO =
 	{
 		"ClearLine:",	Vector3(-360.0f, -100.0f, 0.0f),	float(2.0f),	Vector4(g_vec4White)
@@ -120,11 +122,10 @@ void ResultView::ViewResultText()
 }
 
 /// <summary>
-/// 各同時消しのスコア表示。
+/// 「Single」「Double」「Triple」「Tetris」のスコア表示。
 /// </summary>
 void ResultView::ViewLineClearScore()
 {
-	//「Single」「Double」「Triple」「Tetris」のスコア表示。
 	for (int i = 0; i < static_cast<int>(LineClearType::LineClearType_Num); i++)
 	{
 		wchar_t wtext[128];
@@ -133,6 +134,9 @@ void ResultView::ViewLineClearScore()
 	}
 }
 
+/// <summary>
+/// 合計ラインクリア数を表示します。
+/// </summary>
 void ResultView::ViewLineClearTotalCount()
 {
 	wchar_t wtext[128];

@@ -11,6 +11,29 @@ namespace
 	constexpr int FIRST_LEVEL = 1;							// 最初のレベル。
 }
 
+/// <summary>
+/// 消した列の数に応じてスコアに加算します。
+/// </summary>
+/// <param name="clearLineCount">消した列の数。</param>
+void ScoreManager::AddScore(bool isTSpin, int clearLineCount, int comboCount)
+{
+	// 不正な値が来たら無視。
+	if (clearLineCount <= 0 || clearLineCount > static_cast<int>(LineClearType::LineClearType_Num)) {
+		return;
+	}
+	// 消したラインの数に応じて「Single」～「Tetris」のカウントを増やす。
+	m_lineClearTypeCounts[clearLineCount - 1]++;
+
+	// 総消去ライン数を計算。
+	AddTotalScore(isTSpin, clearLineCount, comboCount);
+
+	// 総消去ライン数を加算。
+	m_lineClearTotalCounts += clearLineCount;
+
+	// レベルを更新。
+	RecalculateLevel();
+}
+
 bool ScoreManager::Start()
 {
 	m_beforeLevel = FIRST_LEVEL;
@@ -77,27 +100,4 @@ int ScoreManager::CalcComboScore(int lineClearComboCount)
 	// 2回目以降のライン消去に対してコンボボーナスを加算。
 	int comboBonus = comboCount * SCORE_PER_COMBO;
 	return comboBonus;
-}
-
-/// <summary>
-/// 消した列の数に応じてスコアに加算します。
-/// </summary>
-/// <param name="clearLineCount">消した列の数。</param>
-void ScoreManager::AddScore(bool isTSpin, int clearLineCount, int comboCount)
-{
-	// 不正な値が来たら無視。
-	if (clearLineCount <= 0 || clearLineCount > static_cast<int>(LineClearType::LineClearType_Num)) {
-		return;
-	}
-	// 消したラインの数に応じて「Single」～「Tetris」のカウントを増やす。
-	m_lineClearTypeCounts[clearLineCount - 1]++;
-
-	// 総消去ライン数を計算。
-	AddTotalScore(isTSpin, clearLineCount, comboCount);
-
-	// 総消去ライン数を加算。
-	m_lineClearTotalCounts += clearLineCount;
-
-	// レベルを更新。
-	RecalculateLevel();
 }

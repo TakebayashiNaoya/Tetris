@@ -150,11 +150,10 @@ private:
 	/// <returns>Tスピンの場合は true、そうでない場合は false を返します。</returns>
 	bool CheckIsTSpin();
 
-	/// <summary>
-	/// フィールド上に空ブロックを配置し、各ブロックのスプライトを配置・更新します。
-	/// </summary>
+
+
+	// フィールド上に空ブロックを配置し、各ブロックのスプライトを配置・更新します。
 	std::array<std::array<OneBlockOfFieldInfo, PLAYABLE_HEIGHT_IN_BLOCKS>, PLAYABLE_WIDTH_IN_BLOCKS> checkFields;
-	Vector2 stagePivotPosition = Vector2::Zero;
 
 	SpriteRender stageSpriteRender;	// ステージのスプライトレンダー。
 
@@ -163,9 +162,9 @@ private:
 	ScoreManager* m_scoreManager;
 	HoldView* m_holdView;
 
-	int m_holdedMinoKind = 0;
-	bool m_isHolded = false;
-	int m_comboCount = 0;
-	bool m_isAllowedToHold = true;
+	int m_holdedMinoKind = 0;		// ホールドされているミノの種類。
+	bool m_isHolded = false;		// ミノがホールドされている場合はtrue。
+	int m_comboCount = 0;			// コンボ数。
+	bool m_isAllowedToHold = true;	// ホールドが許可されているか場合はtrue。
 };
 

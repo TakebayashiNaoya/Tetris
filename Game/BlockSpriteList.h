@@ -7,18 +7,19 @@ class BlockSpriteList :public IGameObject
 public:
 	bool Start() override final;
 
-	/// <summary> 
-	/// 指定した種類のブロックのスプライトレンダーのアドレスを取得する。
+
+	/// <summary>
+	/// 指定された種類のブロックスプライトレンダーのアドレスを取得します。
 	/// </summary>
+	/// <param name="kind">取得したいブロックスプライトレンダーの種類を示す整数値。</param>
+	/// <returns>指定された種類のブロックスプライトレンダーへのポインタ。</returns>
 	SpriteRender* GetBlockSpriteRenderAddress(int kind)
 	{
 		return &blockSpriteRender[kind];
 	}
 
 private:
-	/// <summary>
-	/// ブロックのスプライトレンダーの配列。
-	/// </summary>
+	// ブロックのスプライトレンダーの配列。
 	std::array<SpriteRender, static_cast<int>(EnMinoKinds::enMinoKinds_Num)> blockSpriteRender;
 };
 

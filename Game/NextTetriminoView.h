@@ -57,6 +57,6 @@ private:
 	};
 
 	SpriteRender m_nextMinoSpriteRender[NEXT_MINO_DISPLAY_COUNT];	// 次に生成されるテトリミノを表示するスプライトレンダー。
-	FontRender m_nextTextFontRender;
+	FontRender m_nextTextFontRender;								// 「NEXT」のテキストを表示するフォントレンダー。
 };
 

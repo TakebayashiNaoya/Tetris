@@ -40,6 +40,9 @@ void Game::Update()
 
 }
 
+/// <summary>
+/// ゲームオーバー時に関連するゲームオブジェクトを削除し、結果表示ビューを生成します。
+/// </summary>
 void Game::OnGameOver()
 {
 	DeleteGO(m_fieldManager);

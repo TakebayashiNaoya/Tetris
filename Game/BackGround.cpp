@@ -8,14 +8,14 @@ namespace
 	constexpr float FULL_HD_HEIGHT = 1080.0f;	// フルHDの縦幅。
 
 	const std::string TITLE_LOGO_FILE_PATH = "Assets/Sprite/BackGround/";	// テトリミノのファイルパス。
-	const std::string EXTENSION_DDS = ".dds";									// スプライトの拡張子。
-	const std::string fileName[] =												// ファイルの名前。
+	const std::string EXTENSION_DDS = ".dds";								// スプライトの拡張子。
+	const std::string fileName[] =											// ファイルの名前。
 	{
-		std::string("CaveSky"),		// 空が見える洞窟。
+		std::string("CaveSky"),			// 空が見える洞窟。
 		std::string("FantasticSky"),	// 幻想的な空。
 		std::string("Hologram"),		// ホログラムチックな部屋。
 		std::string("Lake"),			// 霧のかかった湖。
-		std::string("CrystalCave"),	// 水晶洞窟。
+		std::string("CrystalCave"),		// 水晶洞窟。
 	};
 	const int BACKGROUND_TYPES_NUM = sizeof(fileName) / sizeof(fileName[0]); // 背景の種類数。
 

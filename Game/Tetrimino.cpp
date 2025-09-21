@@ -48,6 +48,9 @@ namespace
 		enRotationDeg_Num
 	};
 
+	/// <summary>
+	/// SRSのオフセット情報。
+	/// </summary>
 	struct SRSOffsetInfo
 	{
 		int beforeState = 0;						// 回転前の状態。
@@ -55,6 +58,9 @@ namespace
 		Vector2 Offset[offsetCountPerPattern];		// 1つ目のオフセット。
 	};
 
+	/// <summary>
+	/// SRSのオフセットパターン一覧（Iミノ以外）。
+	/// </summary>
 	SRSOffsetInfo SRSOffsetTableForNormal[offsetPatternForRotateState] =
 	{
 		//	回転前の状態										回転後の状態
@@ -84,6 +90,9 @@ namespace
 			{Vector2(0.0f,0.0f), Vector2(1.0f,0.0f),  Vector2(1.0f,1.0f),   Vector2(0.0f,-2.0f), Vector2(1.0f,-2.0f)}}
 	};
 
+	/// <summary>
+	/// SRSのオフセットパターン一覧（Iミノ）。
+	/// </summary>
 	SRSOffsetInfo SRSOffsetTableForI[offsetPatternForRotateState] =
 	{
 		//	回転前の状態										回転後の状態
@@ -114,8 +123,10 @@ namespace
 	};
 };
 
-void Tetrimino::Reset()
+
+void Tetrimino::ResetForHold()
 {
+	// 各ブロックのスプライトを解放。
 	for (int i = 0; i < MINO_PARTS_COUNT; i++) {
 		delete m_blockSpriteRender[i];
 		m_blockSpriteRender[i] = nullptr;
@@ -187,6 +198,7 @@ void Tetrimino::Update()
 
 	// テトリミノの左右下移動操作。
 	HandleInputMovement();
+	if (m_isHardDrop) { return; }
 
 	// 落下処理。
 	AddGravity();
@@ -388,7 +400,7 @@ void Tetrimino::HandleInputMovement()
 			MoveDown();
 			CalcBlocksCurrentGlobalGridPositions();
 		}
-		m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
+		m_isHardDrop = true;
 	}
 }
 
@@ -621,6 +633,11 @@ bool Tetrimino::SaveToFieldManager()
 		}
 		// 下が接触し、一定時間経過したらフィールドに保存。
 		else if (m_deleteTimer > DELETE_TIME) {
+			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
+			return true;
+		}
+		// ハードドロップした場合、即座にフィールドに保存。
+		else if (m_isHardDrop) {
 			m_fieldManager->SaveTetrimino(m_blocksCurrentGlobalGridPositions, m_blockSpriteRender);
 			return true;
 		}

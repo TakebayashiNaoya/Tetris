@@ -8,6 +8,9 @@ namespace
 	constexpr float FULL_HD_WIDTH = 1920.0f;	// フルHDの横幅。
 	constexpr float FULL_HD_HEIGHT = 1080.0f;	// フルHDの縦幅。
 
+	/// <summary>
+	/// 「PAUSE」と常時するためのテキスト情報。
+	/// </summary>
 	ResultInfo LINE_CLEAR_TOTAL_COUNT_INFO =
 	{
 		"PAUSE",	Vector3(-200.0f, 100.0f, 0.0f),	float(3.0f),	Vector4(g_vec4White)

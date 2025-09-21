@@ -39,7 +39,7 @@ private:
 	/// </summary>
 	void CreatePressAtoTitleText();
 
-	SpriteRender m_backSpriteRender;	// 結果表示用のスプライトレンダー。
+	SpriteRender m_backSpriteRender;		// 結果表示用のスプライトレンダー。
 
 	FontRender m_viewLineClearScore[static_cast<int>(LineClearType::LineClearType_Num)];	// スコア表示用のフォントレンダー。
 	FontRender m_resultFontRender;			// 結果表示用のフォントレンダー。
@@ -47,7 +47,7 @@ private:
 	FontRender m_viewTotalScore;			// 合計スコア表示用のフォントレンダー。
 	FontRender m_pressAtoTitleFontRender;	// タイトルへ戻る案内用のフォントレンダー。
 
-	Game* m_game = nullptr;					// ゲームクラス。
-	ScoreManager* m_scoreManager = nullptr;	// スコアマネージャー。
+	Game* m_game = nullptr;
+	ScoreManager* m_scoreManager = nullptr;
 };
 
