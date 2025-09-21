@@ -9,7 +9,7 @@ namespace
 	constexpr float NEXT_MINO_VIEW_POS_X = 400.0f;		// 次に表示するテトリミノのX座標。
 	constexpr float NEXT_MINO_VIEW_POS_Y = 350.0f;		// 次に表示するテトリミノのY座標。
 	constexpr float NEXT_MINO_VIEW_INTERVAL = 100.0f;	// 次に表示するテトリミノの間隔。
-	constexpr int INIT_RESERVE_QUEUE_NUM = 12;			// 控え配列の初期化回数。
+	constexpr int INIT_RESERVE_QUEUE_NUM = 13;			// 控え配列の初期化回数。
 
 	const std::string TITLE_LOGO_FILE_PATH = "Assets/Sprite/Tetrimino/FullSizeMino_";	// テトリミノのファイルパス。
 	const std::string EXTENSION_DDS = ".dds";											// スプライトの拡張子。
