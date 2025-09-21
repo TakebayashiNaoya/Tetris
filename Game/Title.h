@@ -9,8 +9,10 @@ class Title :public IGameObject
 {
 public:
 	Title();
+	~Title();
 
 private:
+	bool Start() override final;
 	void Update() override final;
 	void Render(RenderContext& rc) override final;
 

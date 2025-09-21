@@ -2,6 +2,7 @@
 #include "Title.h"
 #include "Game.h"
 #include "TextTemplate.h"
+#include "SoundManager.h"
 
 namespace
 {
@@ -42,18 +43,32 @@ namespace
 	/// </summary>
 	TitleLogoSpriteInfo titleLogoSpritesInfo[CHARACTER_COUNT_OF_TETRIS] =
 	{
-		{"FirstT",	{-640.0f,	100.0f}},
-		{"E",		{-360.0f,	100.0f}},
-		{"SecondT",	{-80.0f,	100.0f}},
-		{"R",		{200.0f,	100.0f}},
-		{"I",		{400.0f,	100.0f}},
-		{"S",		{600.0f,	100.0f}},
+		{std::string("FirstT"),		Vector2(-640.0f,100.0f)},
+		{std::string("E"),			Vector2(-360.0f,100.0f)},
+		{std::string("SecondT"),	Vector2(-80.0f,	100.0f)},
+		{std::string("R"),			Vector2(200.0f,	100.0f)},
+		{std::string("I"),			Vector2(400.0f,	100.0f)},
+		{std::string("S"),			Vector2(600.0f,	100.0f)},
 	};
 
 }
 
 Title::Title()
 {
+
+}
+
+Title::~Title()
+{
+	SoundManager* sound = FindGO<SoundManager>("SoundManager");
+	sound->SoundDeleteGO(enSoundList_TitleBGM);
+}
+
+bool Title::Start()
+{
+	SoundManager* soundManager = FindGO<SoundManager>("SoundManager");
+	soundManager->SoundNewGO(enSoundList_TitleBGM);
+
 	// タイトル背景のスプライトを設定。
 	m_titleSpriteRender.Init("Assets/Sprite/Title/TitleBack.dds", FULL_HD_WIDTH, FULL_HD_HEIGHT);
 
@@ -62,11 +77,15 @@ Title::Title()
 
 	// タイトルロゴのスプライトを設定。
 	CreateTitleLogo();
+
+	return true;
 }
 
 void Title::Update()
 {
 	if (g_pad[0]->IsTrigger(enButtonA)) {
+		SoundManager* sound = FindGO<SoundManager>("SoundManager");
+		sound->SoundNewGO(enSoundList_SelectSE);
 		DeleteGO(this);
 		NewGO<Game>(0, "Game");
 	}

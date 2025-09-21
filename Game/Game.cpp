@@ -8,11 +8,14 @@
 #include "NextTetriminoView.h"
 #include "ResultView.h"
 #include "PauseView.h"
+#include "SoundManager.h"
 
 Game::~Game()
 {
 	DeleteGO(m_backGround);
 	DeleteGO(m_scoreManager);
+	SoundManager* soundManager = FindGO<SoundManager>("SoundManager");
+	soundManager->SoundDeleteGO(enSoundList_InGameBGM);
 }
 
 bool Game::Start()
@@ -23,6 +26,10 @@ bool Game::Start()
 	m_fieldManager = NewGO<FieldManager>(0, "FieldManager");
 	m_nextTetriminoView = NewGO<NextTetriminoView>(0, "NextTetriminoView");
 	m_pauseView = NewGO<PauseView>(0, "PauseManager");
+
+	SoundManager* soundManager = FindGO<SoundManager>("SoundManager");
+	soundManager->SoundNewGO(enSoundList_InGameBGM);
+
 	return true;
 }
 

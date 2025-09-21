@@ -6,6 +6,7 @@
 #include "BlockSpriteList.h"
 #include "NextTetriminoView.h"
 #include "PauseView.h"
+#include "SoundManager.h"
 
 namespace
 {
@@ -25,14 +26,14 @@ namespace
 	/// </summary>
 	Vector2 BlocksLocalPositionRatio[MINO_KINDS_COUNT][MINO_PARTS_COUNT] =
 	{
-		//	1ブロック目,	2ブロック目,	3ブロック目,	4ブロック目 
-			{{-1.5f,0.5f},	{-0.5f,0.5f},	{0.5f,0.5f},	{1.5f,0.5f} },	// I
-			{{0,0},			{-1,1},			{-1,0},			{1,0}		},	// J
-			{{0,0},			{-1,0},			{1,0},			{1,1}		},	// L
-			{{-0.5f,0.5f},	{-0.5f,-0.5f},	{0.5f,0.5f},	{0.5f,-0.5f}},	// O
-			{{0,0},			{-1,0},			{0,1},			{1,1}		},	// S
-			{{0,0},			{-1,0},			{0,1},			{1,0}		},	// T
-			{{0,0},			{-1,1},			{0,1},			{1,0}		}	// Z
+		//	1ブロック目,			2ブロック目,			3ブロック目,			4ブロック目 
+			{Vector2(-1.5f,0.5f),	Vector2(-0.5f, 0.5f),	Vector2(0.5f, 0.5f),	Vector2(1.5f,0.5f)},	// I
+			{Vector2(0.0f,0.0f),	Vector2(-1.0f, 1.0f),	Vector2(-1.0f,0.0f),	Vector2(1.0f,0.0f)},	// J
+			{Vector2(0.0f,0.0f),	Vector2(-1.0f, 0.0f),	Vector2(1.0f, 0.0f),	Vector2(1.0f,1.0f)},	// L
+			{Vector2(-0.5f,0.5f),	Vector2(-0.5f,-0.5f),	Vector2(0.5f, 0.5f),	Vector2(0.5f,-0.5f)},	// O
+			{Vector2(0.0f,0.0f),	Vector2(-1.0f, 0.0f),	Vector2(0.0f, 1.0f),	Vector2(1.0f,1.0f)},	// S
+			{Vector2(0.0f,0.0f),	Vector2(-1.0f, 0.0f),	Vector2(0.0f, 1.0f),	Vector2(1.0f,0.0f)},	// T
+			{Vector2(0.0f,0.0f),	Vector2(-1.0f, 1.0f),	Vector2(0.0f, 1.0f),	Vector2(1.0f,0.0f)}		// Z
 	};
 
 	/// <summary> 
@@ -49,8 +50,8 @@ namespace
 
 	struct SRSOffsetInfo
 	{
-		int beforeState;							// 回転前の状態。
-		int currentState;							// 回転後の状態。
+		int beforeState = 0;						// 回転前の状態。
+		int currentState = 0;						// 回転後の状態。
 		Vector2 Offset[offsetCountPerPattern];		// 1つ目のオフセット。
 	};
 
@@ -382,6 +383,10 @@ void Tetrimino::HandleDirectionalInput(EnButton button, bool isBlocked, std::fun
 		if (isBlocked) return;
 		moveFunc();
 		CalcBlocksCurrentGlobalGridPositions();
+
+		SoundManager* sound = FindGO<SoundManager>("SoundManager");
+		sound->SoundNewGO(enSoundList_MoveSE);
+
 		m_pressTimer = 0.0f;
 	}
 
@@ -558,6 +563,10 @@ bool Tetrimino::SRS_Check(Vector2 offset)
 		m_minoPivotGridPosition.x += offset.x;
 		m_minoPivotGridPosition.y += offset.y;
 		CalcBlocksCurrentGlobalGridPositions();
+
+		SoundManager* sound = FindGO<SoundManager>("SoundManager");
+		sound->SoundNewGO(enSoundList_SpinSE);
+
 		return true;
 	}
 	// 重なっていれば補正を適用しない。

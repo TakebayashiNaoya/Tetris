@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PauseView.h"
 #include "TextTemplate.h"
+#include "SoundManager.h"
 
 namespace
 {
@@ -30,6 +31,8 @@ void PauseView::Update()
 {
 	if (g_pad[0]->IsTrigger(enButtonStart)) {
 		// スタートボタンが押されたらポーズのON/OFFを切り替え。
+		SoundManager* sound = FindGO<SoundManager>("SoundManager");
+		sound->SoundNewGO(enSoundList_PauseSE);
 		m_isPause = !m_isPause;
 	}
 }

@@ -96,6 +96,8 @@ private:
 	/// <param name="lineY">消すラインのY座標。</param>
 	void ClearFullLine(int lineY);
 
+	void PlaySoundOnLineClear(int clearLineCount);
+
 	/// <summary>
 	/// フィールド上に空ブロックを配置し、各ブロックのスプライトを配置・更新します。
 	/// </summary>

@@ -19,6 +19,7 @@ private:
 	int m_lineClearTotalCounts = 0;	// 総消去ライン数。
 	int m_totalScore = 0;			// 合計スコア。
 	int m_currentLevel = 0;			// 現在のレベル。
+	int m_beforeLevel = 0;			// 前のレベル。
 
 	bool Start()override final;
 
@@ -26,6 +27,11 @@ private:
 	/// レベルを更新します。
 	/// </summary>
 	void UpdateLevel();
+
+	/// <summary>
+	/// レベルアップ時にサウンドを再生します。
+	/// </summary>
+	void PlaySoundForLevelUp();
 
 public:
 	/// <summary>
