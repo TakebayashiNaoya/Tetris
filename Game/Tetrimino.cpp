@@ -258,7 +258,7 @@ void Tetrimino::SetupPivotPosition()
 void Tetrimino::SwitchRotationState()
 {
 	// Aボタンで右回転。
-	if (g_pad[0]->IsTrigger(enButtonA)) {
+	if (g_pad[0]->IsTrigger(enButtonRB1)) {
 		// 回転状態を保存。
 		int beforeState = m_rotationState;
 		// 回転状態を更新。
@@ -272,7 +272,7 @@ void Tetrimino::SwitchRotationState()
 		CalcBlocksCurrentGlobalGridPositions();
 	}
 	// Bボタンで左回転。
-	else if (g_pad[0]->IsTrigger(enButtonB)) {
+	else if (g_pad[0]->IsTrigger(enButtonLB1)) {
 		// 回転状態を保存。
 		int beforeState = m_rotationState;
 		// 回転状態を更新。
